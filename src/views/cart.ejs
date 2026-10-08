@@ -1,0 +1,53 @@
+<%- include('partials/header', {pageTitle: t('cart.title'), activeNav: 'cart'}) %>
+<%
+var _L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+var _CSRF = (typeof csrfToken !== 'undefined') ? csrfToken : '';
+var _items = (typeof items !== 'undefined' && items) ? items : ((typeof cart !== 'undefined' && cart) ? cart : []);
+var _mxn = function(n){ return '$' + Number(n || 0).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2}); };
+var _title = function(p){ return (_L === 'en' && p && p.title_en) ? p.title_en : ((p && p.title_es) || ''); };
+var _img = function(p){ var s = p && p.image_path ? String(p.image_path) : ''; if (s && s.indexOf('/') !== 0 && s.indexOf('http') !== 0) s = '/uploads/' + s; return s; };
+var _subtotal = (typeof subtotal !== 'undefined' && subtotal !== null) ? subtotal
+  : _items.reduce(function(a, it){ var p = it.product || it; var q = it.qty || 1; var pr = (p && p.price_mxn != null) ? Number(p.price_mxn) : 0; return a + pr * q; }, 0);
+var _hasTbd = (typeof hasTbd !== 'undefined') ? hasTbd
+  : _items.some(function(it){ var p = it.product || it; return !p || p.price_mxn === null || typeof p.price_mxn === 'undefined'; });
+%>
+
+<h1 class="section-title"><svg class="ic"><use href="#i-bag"/></svg><%= t('cart.title') %></h1>
+<div class="sparkle-div"><span class="hearts">♥ ✦ ♥</span></div>
+
+<% if (_items.length) { %>
+  <% _items.forEach(function(it){ var p = it.product || it; var q = it.qty || 1; var pid = (p && p.id) || it.productId || it.product_id; %>
+    <div class="cart-line">
+      <% var _s = _img(p); %>
+      <% if (_s) { %><img src="<%= _s %>" alt=""><% } else { %><img src="" alt="" style="visibility:hidden"><% } %>
+      <div>
+        <div class="t"><%= _title(p) %></div>
+        <div class="u"><%= t('cart.unit') %>: <%= (p && p.price_mxn != null) ? _mxn(p.price_mxn) : t('catalog.tbd_badge') %> × <%= q %></div>
+        <div class="row2">
+          <form method="POST" action="/carrito/quitar/<%= pid %>" class="inline-form">
+            <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+            <button type="submit" class="link-danger"><svg class="ic"><use href="#i-trash"/></svg><%= t('cart.remove') %></button>
+          </form>
+        </div>
+      </div>
+      <div class="card-price"><%= (p && p.price_mxn != null) ? _mxn(p.price_mxn * q) : '♥' %></div>
+    </div>
+  <% }); %>
+
+  <% if (_hasTbd) { %><div class="notice warn">♥ <%= t('cart.tbd_notice') %></div><% } %>
+
+  <div class="cart-total">
+    <div class="line"><span><%= t('cart.subtotal') %></span><b><%= _mxn(_subtotal) %></b></div>
+    <div class="line grand"><span>Total</span><span><%= _mxn(_subtotal) %></span></div>
+    <p class="mt"><a class="btn btn-block" href="/checkout"><svg class="ic"><use href="#i-check"/></svg><%= t('cart.checkout') %></a></p>
+    <p class="center small"><a href="/catalogo">♥ <%= t('catalog.title') %></a></p>
+  </div>
+<% } else { %>
+  <div class="empty-state">
+    <div class="big">♥</div>
+    <p><b><%= t('cart.empty') %></b></p>
+    <p><a class="btn" href="/catalogo"><%= t('cart.empty_cta') %></a></p>
+  </div>
+<% } %>
+
+<%- include('partials/footer') %>

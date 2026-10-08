@@ -1,0 +1,60 @@
+<%- include('partials/header', {pageTitle: t('catalog.title'), activeNav: 'catalog'}) %>
+<%
+var _L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+var _products = (typeof products !== 'undefined' && products) ? products : [];
+var _filters = (typeof filters !== 'undefined' && filters) ? filters : {};
+var _cats = (typeof categories !== 'undefined' && categories) ? categories : [];
+var _ages = (typeof ages !== 'undefined' && ages) ? ages : ['<20','20-30','30-40','40-50','50-60','60+'];
+var _ageMap = {'<20':'ages.under20','20-30':'ages.label_20_30','30-40':'ages.label_30_40','40-50':'ages.label_40_50','50-60':'ages.label_50_60','60+':'ages.over60'};
+var _q = _filters.q || '', _cat = _filters.category || '', _age = _filters.age || '', _price = _filters.price || '';
+%>
+
+<nav class="breadcrumb"><a href="/"><%= t('misc.home_breadcrumb') %></a> › <%= t('catalog.title') %></nav>
+<h1 class="section-title"><svg class="ic"><use href="#i-grid"/></svg><%= t('catalog.title') %></h1>
+<div class="sparkle-div"><span class="hearts">♥ ✦ ♥</span></div>
+
+<form class="form-card" method="GET" action="/catalogo" style="margin-top:0">
+  <div class="two-col">
+    <div class="field">
+      <label for="fq"><%= t('misc.search') %></label>
+      <input type="text" id="fq" name="q" value="<%= _q %>" placeholder="<%= t('catalog.search_ph') %>">
+    </div>
+    <div class="field">
+      <label for="fcat"><%= t('catalog.category') %></label>
+      <select id="fcat" name="category">
+        <option value=""><%= t('catalog.all_categories') %></option>
+        <% _cats.forEach(function(c){ %>
+          <option value="<%= c %>" <%= _cat === c ? 'selected' : '' %>><%= c %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="field">
+      <label for="fage"><%= t('catalog.age') %></label>
+      <select id="fage" name="age">
+        <option value=""><%= t('catalog.all_ages') %></option>
+        <% _ages.forEach(function(a){ %>
+          <option value="<%= a %>" <%= _age === a ? 'selected' : '' %>><%= t(_ageMap[a] || 'misc.all') %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="field">
+      <label for="fprice"><%= t('catalog.price') %></label>
+      <select id="fprice" name="price">
+        <option value=""><%= t('catalog.all_prices') %></option>
+        <option value="with_price" <%= _price === 'with_price' ? 'selected' : '' %>><%= t('catalog.with_price') %></option>
+        <option value="tbd_only" <%= _price === 'tbd_only' ? 'selected' : '' %>><%= t('catalog.tbd_only') %></option>
+      </select>
+    </div>
+  </div>
+  <button class="btn" type="submit"><svg class="ic"><use href="#i-search"/></svg><%= t('catalog.apply') %></button>
+</form>
+
+<% if (_products.length) { %>
+  <div class="grid">
+    <% _products.forEach(function(p){ %><%- include('partials/product-card', {product: p}) %><% }); %>
+  </div>
+<% } else { %>
+  <div class="empty-state"><div class="big">♥</div><p><b><%= t('catalog.no_results') %></b></p></div>
+<% } %>
+
+<%- include('partials/footer') %>

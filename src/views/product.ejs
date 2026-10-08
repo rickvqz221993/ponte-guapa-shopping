@@ -1,0 +1,74 @@
+<%- include('partials/header', {pageTitle: '', activeNav: 'catalog'}) %>
+<%
+var _L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+var _CSRF = (typeof csrfToken !== 'undefined') ? csrfToken : '';
+var _WA = (typeof waNumber !== 'undefined' && waNumber) ? String(waNumber).replace(/\D/g,'') : '971526864330';
+var _p = (typeof product !== 'undefined' && product) ? product : null;
+var _related = (typeof related !== 'undefined' && related) ? related : [];
+var _mxn = function(n){ return '$' + Number(n || 0).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2}); };
+var _title = _p ? ((_L === 'en' && _p.title_en) ? _p.title_en : (_p.title_es || '')) : '';
+var _desc = _p ? ((_L === 'en' && _p.desc_en) ? _p.desc_en : (_p.desc_es || '')) : '';
+var _src = '';
+if (_p && _p.image_path) { _src = String(_p.image_path); if (_src.indexOf('/') !== 0 && _src.indexOf('http') !== 0) _src = '/uploads/' + _src; }
+var _ageMap = {'<20':'ages.under20','20-30':'ages.label_20_30','30-40':'ages.label_30_40','40-50':'ages.label_40_50','50-60':'ages.label_50_60','60+':'ages.over60'};
+var _ageGroups = (_p && _p.age_groups) ? String(_p.age_groups).split(',').map(function(s){ return s.trim(); }).filter(Boolean) : [];
+var _shareText = _title + ' — Ponte Guapa Shopping';
+%>
+
+<% if (_p) { %>
+<nav class="breadcrumb"><a href="/"><%= t('misc.home_breadcrumb') %></a> › <a href="/catalogo"><%= t('nav.catalog') %></a> › <%= _title %></nav>
+
+<div class="product-hero">
+  <div class="product-photo">
+    <% if (_src) { %><img src="<%= _src %>" alt=""><% } else { %><div class="noimg" style="aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:4rem;color:var(--pg-soft)">♥</div><% } %>
+  </div>
+  <div class="product-info">
+    <h1><%= _title %></h1>
+    <% if (_p.price_mxn === null || typeof _p.price_mxn === 'undefined') { %>
+      <div><span class="badge badge-tbd">♥ <%= t('catalog.tbd_badge') %></span></div>
+      <div class="tbd-note"><%= t('product.tbd_note') %></div>
+    <% } else { %>
+      <div class="price-big"><%= _mxn(_p.price_mxn) %> <span class="small muted"><%= t('misc.mxn') %></span></div>
+    <% } %>
+    <% if (_p.category) { %><p class="small"><b><%= t('product.category') %>:</b> <%= _p.category %></p><% } %>
+    <% if (_ageGroups.length) { %>
+      <p class="small"><b><%= t('product.recommended_ages') %>:</b></p>
+      <div class="age-row">
+        <% _ageGroups.forEach(function(a){ %><span class="badge badge-age">♥ <%= t(_ageMap[a] || 'misc.all') %></span><% }); %>
+      </div>
+    <% } %>
+    <form method="POST" action="/carrito/agregar/<%= _p.id %>">
+      <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+      <div class="qty-row">
+        <label for="qty"><b><%= t('product.qty') %></b></label>
+        <button type="button" class="qty-btn" data-qty-minus data-qty-target="qty">−</button>
+        <input class="qty-input" type="number" id="qty" name="qty" value="1" min="1" max="99">
+        <button type="button" class="qty-btn" data-qty-plus data-qty-target="qty">+</button>
+      </div>
+      <button class="btn btn-block" type="submit"><svg class="ic"><use href="#i-bag"/></svg><%= t('product.add') %></button>
+    </form>
+    <p class="mt">
+      <a class="btn btn-soft btn-sm" target="_blank" rel="noopener"
+         href="https://wa.me/<%= _WA %>?text=<%= encodeURIComponent(_shareText) %>">
+        <svg class="ic"><use href="#i-phone"/></svg><%= t('product.share_whatsapp') %>
+      </a>
+    </p>
+  </div>
+</div>
+
+<h2 class="section-title"><svg class="ic"><use href="#i-doc"/></svg><%= t('product.description') %></h2>
+<div class="policy-sec"><p style="white-space:pre-line;margin:0"><%= _desc %></p></div>
+
+<% if (_related.length) { %>
+  <h2 class="section-title"><svg class="ic"><use href="#i-heart"/></svg><%= t('catalog.recommended_for_you') %></h2>
+  <div class="sparkle-div"><span class="hearts">♥ ✦ ♥</span></div>
+  <div class="grid">
+    <% _related.forEach(function(p){ %><%- include('partials/product-card', {product: p}) %><% }); %>
+  </div>
+<% } %>
+<% } else { %>
+  <div class="empty-state"><div class="big">♥</div><p><b><%= t('catalog.no_results') %></b></p>
+  <p><a class="btn" href="/catalogo"><%= t('misc.back') %></a></p></div>
+<% } %>
+
+<%- include('partials/footer') %>

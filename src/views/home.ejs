@@ -1,0 +1,63 @@
+<%- include('partials/header', {pageTitle: '', activeNav: 'home'}) %>
+<%
+var _L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+var _WA = (typeof waNumber !== 'undefined' && waNumber) ? String(waNumber).replace(/\D/g,'') : '971526864330';
+var _featured = (typeof featured !== 'undefined' && featured) ? featured : [];
+var _latest = (typeof latest !== 'undefined' && latest) ? latest : [];
+var _ann = (typeof announcements !== 'undefined' && announcements) ? announcements : [];
+var _steps = t('home.how_steps');
+if (!Array.isArray(_steps)) _steps = [];
+var _atitle = function(a){ return (_L === 'en' && a.title_en) ? a.title_en : a.title_es; };
+var _abody = function(a){ return (_L === 'en' && a.body_en) ? a.body_en : a.body_es; };
+%>
+
+<section class="hero">
+  <h1><%= t('home.hero_title') %></h1>
+  <p><%= t('home.hero_sub') %></p>
+  <a class="btn btn-white" href="/catalogo"><svg class="ic"><use href="#i-heart"/></svg><%= t('home.hero_cta') %></a>
+</section>
+
+<h2 class="section-title"><svg class="ic"><use href="#i-star"/></svg><%= t('home.how_title') %></h2>
+<div class="sparkle-div"><span class="hearts">♥ ✦ ♥</span></div>
+<div class="how-steps">
+  <% _steps.forEach(function(s, i){ %>
+    <div class="how-step">
+      <span class="n"><%= i + 1 %></span>
+      <div><b><%= s.t %></b><span class="muted"><%= s.d %></span></div>
+    </div>
+  <% }); %>
+</div>
+<div class="center mt">
+  <a class="btn btn-outline" href="/como-comprar"><%= t('nav.how_to_buy') %></a>
+  <a class="btn btn-soft" href="https://wa.me/<%= _WA %>?text=<%= encodeURIComponent(t('home.whatsapp_cta')) %>" target="_blank" rel="noopener"><svg class="ic"><use href="#i-phone"/></svg><%= t('home.whatsapp_cta') %></a>
+</div>
+
+<% if (_featured.length) { %>
+  <h2 class="section-title"><svg class="ic"><use href="#i-heart"/></svg><%= t('home.featured_title') %></h2>
+  <div class="sparkle-div"><span class="hearts">♥ ✦ ♥</span></div>
+  <div class="grid">
+    <% _featured.forEach(function(p){ %><%- include('partials/product-card', {product: p}) %><% }); %>
+  </div>
+<% } %>
+
+<% if (_latest.length) { %>
+  <h2 class="section-title"><svg class="ic"><use href="#i-tag"/></svg><%= t('home.latest_title') %></h2>
+  <div class="sparkle-div"><span class="hearts">♥ ✦ ♥</span></div>
+  <div class="grid">
+    <% _latest.forEach(function(p){ %><%- include('partials/product-card', {product: p}) %><% }); %>
+  </div>
+<% } %>
+
+<% if (_ann.length) { %>
+  <h2 class="section-title"><svg class="ic"><use href="#i-bell"/></svg><%= t('home.announce_title') %></h2>
+  <div class="sparkle-div"><span class="hearts">♥ ✦ ♥</span></div>
+  <% _ann.slice(0, 3).forEach(function(a){ %>
+    <article class="announce">
+      <h3><%= _atitle(a) %></h3>
+      <p class="muted"><%= _abody(a).length > 160 ? _abody(a).slice(0, 160) + '…' : _abody(a) %></p>
+    </article>
+  <% }); %>
+  <div class="center"><a class="btn btn-outline btn-sm" href="/avisos"><%= t('nav.announcements') %></a></div>
+<% } %>
+
+<%- include('partials/footer') %>

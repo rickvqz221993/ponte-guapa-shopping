@@ -1,0 +1,7 @@
+<%-
+/*
+ * layout.ejs — thin wrapper. Content views are self-contained
+ * (they include partials/header + partials/footer themselves),
+ * so this wrapper is only used if the backend injects a `body`.
+ */
+%><%- include('partials/header') %><%- typeof body !== 'undefined' ? body : '' %><%- include('partials/footer') %>

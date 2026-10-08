@@ -1,0 +1,93 @@
+<%- include('partials/header', {pageTitle: t('checkout.title'), activeNav: 'cart'}) %>
+<%
+var _U = (typeof user !== 'undefined' && user) ? user : {};
+var _CSRF = (typeof csrfToken !== 'undefined') ? csrfToken : '';
+var _mxn = function(n){ return '$' + Number(n || 0).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2}); };
+var _blocked = (typeof blocked !== 'undefined' && blocked) || (typeof redBlocked !== 'undefined' && redBlocked);
+var _empty = (typeof emptyCart !== 'undefined' && emptyCart);
+var _credit = (typeof creditApplied !== 'undefined' && creditApplied) ? creditApplied : ((typeof credit !== 'undefined' && credit) ? credit : 0);
+var _errors = (typeof errors !== 'undefined' && errors) ? errors : [];
+var _old = (typeof old !== 'undefined' && old) ? old : {};
+function _v(k, fb){ return (typeof _old[k] !== 'undefined' && _old[k] !== null) ? _old[k] : (typeof _U[k] !== 'undefined' ? (_U[k] || fb || '') : (fb || '')); }
+%>
+
+<h1 class="section-title"><svg class="ic"><use href="#i-check"/></svg><%= t('checkout.title') %></h1>
+<div class="sparkle-div"><span class="hearts">♥ ✦ ♥</span></div>
+
+<% if (_errors.length) { %>
+  <div class="form-errors"><% _errors.forEach(function(e){ %><div>♥ <%= e %></div><% }); %></div>
+<% } %>
+
+<% if (_blocked) { %>
+  <div class="form-card center">
+    <div style="font-size:3rem">♥</div>
+    <h2><%= t('checkout.red_blocked_title') %></h2>
+    <p class="muted"><%= t('checkout.red_blocked_text') %></p>
+    <a class="btn" href="/mis-pedidos"><%= t('nav.my_orders') %></a>
+  </div>
+<% } else if (_empty) { %>
+  <div class="empty-state"><div class="big">♥</div><p><b><%= t('checkout.empty_cart') %></b></p>
+  <p><a class="btn" href="/catalogo"><%= t('cart.empty_cta') %></a></p></div>
+<% } else { %>
+<form method="POST" action="/checkout">
+  <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+
+  <div class="form-card">
+    <h3 style="margin-top:0"><svg class="ic"><use href="#i-user"/></svg> <%= t('checkout.contact_title') %></h3>
+    <div class="two-col">
+      <div class="field"><label><%= t('checkout.name') %></label><input type="text" value="<%= _v('name') %>" disabled></div>
+      <div class="field"><label><%= t('checkout.phone') %></label><input type="text" value="<%= _v('phone') %>" disabled></div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <h3 style="margin-top:0"><svg class="ic"><use href="#i-truck"/></svg> <%= t('checkout.ship_title') %></h3>
+    <div class="radio-cards">
+      <label class="radio-card"><input type="radio" name="pickup" value="0" id="opt-ship" checked> <b><%= t('checkout.ship_option') %></b></label>
+      <label class="radio-card"><input type="radio" name="pickup" value="1" id="opt-pickup"> <b><%= t('checkout.pickup_option') %></b></label>
+    </div>
+    <div id="ship-fields" class="mt">
+      <div class="two-col">
+        <div class="field"><label for="ship_name"><%= t('checkout.name') %></label><input type="text" id="ship_name" name="ship_name" value="<%= _v('ship_name', _v('name')) %>" required></div>
+        <div class="field"><label for="ship_phone"><%= t('checkout.phone') %></label><input type="tel" id="ship_phone" name="ship_phone" value="<%= _v('ship_phone', _v('phone')) %>" required></div>
+        <div class="field"><label for="ship_city"><%= t('checkout.city') %></label><input type="text" id="ship_city" name="ship_city" value="<%= _v('ship_city') %>" required></div>
+        <div class="field"><label for="ship_postal"><%= t('checkout.postal') %></label><input type="text" id="ship_postal" name="ship_postal" value="<%= _v('ship_postal') %>" required></div>
+      </div>
+      <div class="field"><label for="ship_address"><%= t('checkout.address') %></label><textarea id="ship_address" name="ship_address" required><%= _v('ship_address') %></textarea></div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <label class="check-row" style="margin:0 0 4px">
+      <input type="checkbox" id="alt-toggle" name="has_alt" value="1">
+      <span><b><%= t('checkout.alt_title') %></b><br><span class="muted small"><%= t('checkout.alt_note') %></span></span>
+    </label>
+    <div id="alt-fields">
+      <div class="two-col mt">
+        <div class="field"><label for="alt_name"><%= t('checkout.name') %> <span class="opt">(<%= t('misc.optional') %>)</span></label><input type="text" id="alt_name" name="alt_name"></div>
+        <div class="field"><label for="alt_phone"><%= t('checkout.phone') %> <span class="opt">(<%= t('misc.optional') %>)</span></label><input type="tel" id="alt_phone" name="alt_phone"></div>
+        <div class="field"><label for="alt_city"><%= t('checkout.city') %> <span class="opt">(<%= t('misc.optional') %>)</span></label><input type="text" id="alt_city" name="alt_city"></div>
+        <div class="field"><label for="alt_postal"><%= t('checkout.postal') %> <span class="opt">(<%= t('misc.optional') %>)</span></label><input type="text" id="alt_postal" name="alt_postal"></div>
+      </div>
+      <div class="field"><label for="alt_address"><%= t('checkout.address') %> <span class="opt">(<%= t('misc.optional') %>)</span></label><textarea id="alt_address" name="alt_address"></textarea></div>
+    </div>
+  </div>
+
+  <% if (_credit > 0) { %>
+    <div class="alert-ok">♥ <%= t('checkout.credit_applied') %>: <%= _mxn(_credit) %></div>
+  <% } %>
+
+  <div class="form-card">
+    <h3 style="margin-top:0">♥ <%= t('checkout.final_title') %></h3>
+    <p class="muted"><%= t('checkout.final_text') %></p>
+    <label class="check-row">
+      <input type="checkbox" name="final_sale_accepted" value="1" required>
+      <span><b><%= t('checkout.final_accept') %></b></span>
+    </label>
+  </div>
+
+  <p><button class="btn btn-block" type="submit"><svg class="ic"><use href="#i-heart"/></svg><%= t('checkout.place_order') %></button></p>
+</form>
+<% } %>
+
+<%- include('partials/footer') %>
