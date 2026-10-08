@@ -1,0 +1,60 @@
+<%- include('partials/header', {pageTitle: t('account.title'), activeNav: 'account'}) %>
+<%
+var _L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+var _U = (typeof user !== 'undefined' && user) ? user : {};
+var _CSRF = (typeof csrfToken !== 'undefined') ? csrfToken : '';
+var _acc = (typeof acumulado !== 'undefined' && acumulado != null) ? Number(acumulado) : 0;
+var _sema = (typeof semaforo !== 'undefined' && semaforo) ? semaforo : 'green';
+var _inv = (typeof inventory !== 'undefined' && inventory) ? inventory : [];
+var _credit = (typeof credit !== 'undefined' && credit != null) ? Number(credit) : (Number(_U.credit_mxn) || 0);
+var _mxn = function(n){ return '$' + Number(n || 0).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2}); };
+var _title = function(p){ return (_L === 'en' && p && p.title_en) ? p.title_en : ((p && p.title_es) || (p && p.title) || ''); };
+%>
+
+<h1 class="section-title"><svg class="ic"><use href="#i-user"/></svg><%= t('account.title') %></h1>
+<div class="sparkle-div"><span class="hearts">♥ ✦ ♥</span></div>
+
+<p class="center" style="font-size:1.15rem"><b><%= t('account.welcome', {name: _U.name || ''}) %></b></p>
+
+<div class="sema-card center">
+  <div class="muted small"><b><%= t('account.accumulated') %></b></div>
+  <div class="acc"><%= _mxn(_acc) %></div>
+  <div class="mt"><span class="sema sema-<%= _sema %>"><%= t('account.sem_' + _sema) %></span></div>
+  <p class="sema-desc"><%= t('account.sem_' + _sema + '_d') %></p>
+  <% if (_credit > 0) { %><p><span class="badge badge-age">♥ <%= t('account.credit') %>: <%= _mxn(_credit) %></span></p><% } %>
+</div>
+
+<div class="toolbar">
+  <a class="btn btn-sm" href="/mis-pedidos"><svg class="ic"><use href="#i-bag"/></svg><%= t('account.orders') %></a>
+  <a class="btn btn-sm btn-outline" href="/avisos"><svg class="ic"><use href="#i-bell"/></svg><%= t('account.announcements') %></a>
+  <span class="spacer"></span>
+  <form method="POST" action="/logout" class="inline-form"><input type="hidden" name="_csrf" value="<%= _CSRF %>">
+    <button class="btn btn-sm btn-soft" type="submit"><svg class="ic"><use href="#i-logout"/></svg><%= t('nav.logout') %></button>
+  </form>
+</div>
+
+<h2 class="section-title"><svg class="ic"><use href="#i-box"/></svg><%= t('account.inventory') %></h2>
+<% if (_inv.length) { %>
+<div class="table-scroll"><table class="tbl">
+  <thead><tr>
+    <th><%= t('account.inv_product') %></th><th><%= t('account.inv_qty') %></th>
+    <th><%= t('account.inv_paid') %></th><th><%= t('account.inv_pending') %></th><th><%= t('account.inv_status') %></th>
+  </tr></thead>
+  <tbody>
+  <% _inv.forEach(function(r){ %>
+    <tr>
+      <td><b><%= _title(r) %></b></td>
+      <td><%= r.qty != null ? r.qty : (r.quantity || '–') %></td>
+      <td><%= _mxn(r.paid != null ? r.paid : r.paid_total) %></td>
+      <td><%= _mxn(r.pending != null ? r.pending : r.pending_total) %></td>
+      <td><span class="badge badge-status"><%= r.status ? t('status.' + r.status) : (r.statuses || '–') %></span></td>
+    </tr>
+  <% }); %>
+  </tbody>
+</table></div>
+<% } else { %>
+  <div class="empty-state"><div class="big">♥</div><p class="muted"><%= t('account.inventory') %> — ♥</p>
+  <p><a class="btn btn-sm" href="/catalogo"><%= t('nav.catalog') %></a></p></div>
+<% } %>
+
+<%- include('partials/footer') %>

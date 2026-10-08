@@ -1,0 +1,40 @@
+<%- include('../partials/header', {pageTitle: t('admin.customers.title'), activeNav: 'admin-customers'}) %>
+<%
+var _L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+var _customers = (typeof customers !== 'undefined' && customers) ? customers : [];
+var _q = (typeof q !== 'undefined' && q) ? q : '';
+var _mxn = function(n){ return '$' + Number(n || 0).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2}); };
+var _semaOf = function(c){ var s = c.semaforo || c.sema || 'green'; return s; };
+%>
+<div class="admin-shell">
+<%- include('_sidebar', {activeNav: 'admin-customers'}) %>
+<div class="admin-main">
+
+<h1 class="section-title"><svg class="ic"><use href="#i-user"/></svg><%= t('admin.customers.title') %></h1>
+
+<form class="toolbar" method="GET" action="/admin/clientes">
+  <div class="field" style="margin:0;flex:1;min-width:220px">
+    <input type="text" name="q" value="<%= _q %>" placeholder="<%= t('admin.customers.search_ph') %>" aria-label="<%= t('admin.customers.search') %>">
+  </div>
+  <button class="btn btn-sm" type="submit"><svg class="ic"><use href="#i-search"/></svg><%= t('admin.customers.search') %></button>
+</form>
+
+<div class="table-scroll"><table class="tbl">
+<thead><tr><th><%= t('auth.name') %></th><th><%= t('admin.customers.member_since') %></th><th><%= t('account.accumulated') %></th><th><%= t('account.semaforo') %></th><th></th></tr></thead>
+<tbody>
+<% if (_customers.length) { _customers.forEach(function(c){ var _s = _semaOf(c); var _acc = (c.acumulado != null) ? c.acumulado : c.accumulated; %>
+<tr>
+  <td><b><%= c.name %></b><div class="small muted"><%= c.email %><% if (c.whatsapp) { %> · <%= c.whatsapp %><% } %></div></td>
+  <td><%= c.created_at ? new Date(c.created_at).toLocaleDateString(_L === 'en' ? 'en-US' : 'es-MX') : '–' %></td>
+  <td><span class="<%= _s === 'red' ? 'flag-red' : (_s === 'yellow' ? 'flag-yellow' : 'flag-green') %>"><%= _mxn(_acc) %></span></td>
+  <td><span class="sema sema-<%= _s %>"><%= t('account.sem_' + _s) %></span></td>
+  <td><a class="btn btn-sm btn-outline" href="/admin/clientes/<%= c.id %>"><%= t('admin.customers.view') %></a></td>
+</tr>
+<% }); } else { %>
+<tr><td colspan="5" class="center muted">♥ —</td></tr>
+<% } %>
+</tbody></table></div>
+
+</div>
+</div>
+<%- include('../partials/footer') %>

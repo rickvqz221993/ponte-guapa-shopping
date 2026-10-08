@@ -1,0 +1,44 @@
+<%- include('../partials/header', {pageTitle: t('admin.products.title'), activeNav: 'admin-products'}) %>
+<%
+var _L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+var _CSRF = (typeof csrfToken !== 'undefined') ? csrfToken : '';
+var _products = (typeof products !== 'undefined' && products) ? products : [];
+var _mxn = function(n){ return '$' + Number(n || 0).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2}); };
+var _title = function(p){ return (_L === 'en' && p.title_en) ? p.title_en : (p.title_es || ''); };
+%>
+<div class="admin-shell">
+<%- include('_sidebar', {activeNav: 'admin-products'}) %>
+<div class="admin-main">
+
+<div class="toolbar">
+  <h1 class="section-title" style="margin:0"><svg class="ic"><use href="#i-tag"/></svg><%= t('admin.products.title') %></h1>
+  <span class="spacer"></span>
+  <a class="btn" href="/admin/productos/nuevo"><svg class="ic"><use href="#i-plus"/></svg><%= t('admin.products.new') %></a>
+</div>
+
+<div class="table-scroll"><table class="tbl">
+<thead><tr><th></th><th><%= t('admin.products.title_es') %></th><th><%= t('admin.products.price_mxn') %></th><th><%= t('admin.products.category') %></th><th><%= t('admin.products.active') %></th><th><%= t('admin.orders.actions') %></th></tr></thead>
+<tbody>
+<% if (_products.length) { _products.forEach(function(p){ var _s = p.image_path ? String(p.image_path) : ''; if (_s && _s.indexOf('/') !== 0 && _s.indexOf('http') !== 0) _s = '/uploads/' + _s; %>
+<tr>
+  <td><% if (_s) { %><img class="thumb" src="<%= _s %>" alt=""><% } else { %><span style="color:var(--pg-soft);font-size:1.6rem">♥</span><% } %></td>
+  <td><b><%= _title(p) %></b><div class="small muted"><%= p.title_en %></div></td>
+  <td><%= (p.price_mxn === null || typeof p.price_mxn === 'undefined') ? '<span class="badge badge-tbd">♥ ' + t('catalog.tbd_badge') + '</span>' : '<b>' + _mxn(p.price_mxn) + '</b>' %></td>
+  <td><%= p.category || '–' %></td>
+  <td><%= (p.active == 1) ? t('misc.yes') : t('misc.no') %></td>
+  <td><div class="row-actions">
+    <a class="btn btn-sm btn-outline" href="/admin/productos/<%= p.id %>/editar"><svg class="ic"><use href="#i-edit"/></svg><%= t('admin.products.edit') %></a>
+    <form method="POST" action="/admin/productos/<%= p.id %>/eliminar" class="inline-form" data-confirm="<%= t('admin.products.confirm_delete') %>">
+      <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+      <button class="btn btn-sm btn-danger" type="submit"><svg class="ic"><use href="#i-trash"/></svg><%= t('admin.products.delete') %></button>
+    </form>
+  </div></td>
+</tr>
+<% }); } else { %>
+<tr><td colspan="6" class="center muted">♥ —</td></tr>
+<% } %>
+</tbody></table></div>
+
+</div>
+</div>
+<%- include('../partials/footer') %>

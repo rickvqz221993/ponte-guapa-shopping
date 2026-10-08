@@ -1,0 +1,11 @@
+<%- include('partials/header', {pageTitle: '', activeNav: ''}) %>
+<%
+var _L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+%>
+<div class="empty-state" style="margin-top:40px">
+  <div class="big">♥</div>
+  <h1 style="margin:8px 0"><%= _L === 'en' ? "You're offline" : 'Sin conexión' %></h1>
+  <p class="muted"><%= _L === 'en' ? 'Check your connection and try again, gorgeous.' : 'Revisa tu conexión e inténtalo de nuevo, hermosa.' %></p>
+  <p><a class="btn" href="/"><%= t('nav.home') %></a></p>
+</div>
+<%- include('partials/footer') %>

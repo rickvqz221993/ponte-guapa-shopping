@@ -1,0 +1,169 @@
+<%- include('../partials/header', {pageTitle: t('admin.orders.title') + ' #' + ((typeof order !== 'undefined' && order && order.id) || ''), activeNav: 'admin-orders'}) %>
+<%
+var _L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+var _CSRF = (typeof csrfToken !== 'undefined') ? csrfToken : '';
+var _o = (typeof order !== 'undefined' && order) ? order : {};
+var _items = (typeof items !== 'undefined' && items) ? items : [];
+var _pays = (typeof payments !== 'undefined' && payments) ? payments : [];
+var _cust = (typeof customer !== 'undefined' && customer) ? customer : {};
+var _acc = (typeof acumulado !== 'undefined' && acumulado != null) ? Number(acumulado) : 0;
+var _sema = (typeof semaforo !== 'undefined' && semaforo) ? semaforo : 'green';
+var _mxn = function(n){ return '$' + Number(n || 0).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2}); };
+var _title = function(p){ return (_L === 'en' && p && p.title_en) ? p.title_en : ((p && p.title_es) || ''); };
+var _st = _o.status || 'pending';
+var _tbd = _items.filter(function(it){ return it.unit_price_mxn === null || typeof it.unit_price_mxn === 'undefined'; });
+var _pendPays = _pays.filter(function(p){ return p.status === 'pending'; });
+%>
+<div class="admin-shell">
+<%- include('_sidebar', {activeNav: 'admin-orders'}) %>
+<div class="admin-main">
+
+<nav class="breadcrumb"><a href="/admin/pedidos"><%= t('admin.orders.title') %></a> › #<%= _o.id %></nav>
+<h1 class="section-title"><svg class="ic"><use href="#i-bag"/></svg><%= t('order.title') %> #<%= _o.id %></h1>
+
+<div class="two-col">
+  <div class="order-head" style="margin:0">
+    <div><span class="badge badge-status"><%= t('status.' + _st) %></span>
+    <span class="badge badge-age"><%= t('channel.' + (_o.channel || 'web')) %></span></div>
+    <dl class="kv">
+      <dt><%= t('order.date') %></dt><dd><%= _o.created_at ? new Date(_o.created_at).toLocaleString(_L === 'en' ? 'en-US' : 'es-MX') : '' %></dd>
+      <dt><%= t('admin.orders.customer') %></dt><dd><a href="/admin/clientes/<%= _cust.id || _o.user_id %>"><b><%= _cust.name || ('#' + _o.user_id) %></b></a>
+        <div class="small muted"><%= _cust.email || '' %> · <%= _cust.whatsapp || _cust.phone || '' %></div></dd>
+      <dt><%= t('account.accumulated') %></dt><dd><b><%= _mxn(_acc) %></b> <span class="sema sema-<%= _sema %>"><%= t('account.sem_' + _sema) %></span></dd>
+      <% if (_o.pickup == 1) { %><dt>♥</dt><dd><%= t('checkout.pickup_option') %></dd>
+      <% } else { %><dt><%= t('order.ship_to') %></dt><dd><%= [_o.ship_name, _o.ship_address, _o.ship_city, _o.ship_postal, _o.ship_phone].filter(Boolean).join(', ') || '–' %></dd><% } %>
+      <% if (_o.alt_name) { %><dt><%= t('checkout.alt_title') %></dt><dd><%= [_o.alt_name, _o.alt_address, _o.alt_city, _o.alt_postal, _o.alt_phone].filter(Boolean).join(', ') %></dd><% } %>
+      <% if (_o.tracking) { %><dt><%= t('order.tracking') %></dt><dd><b><%= _o.tracking %></b></dd><% } %>
+      <% if (_o.pickup_deadline) { %><dt><%= t('order.pickup_deadline') %></dt><dd><%= new Date(_o.pickup_deadline).toLocaleDateString(_L === 'en' ? 'en-US' : 'es-MX') %></dd><% } %>
+    </dl>
+  </div>
+  <div class="totals" style="margin:0">
+    <div class="line"><span><%= t('order.subtotal') %></span><b><%= _mxn(_o.subtotal_mxn) %></b></div>
+    <% if (_o.credit_applied > 0) { %><div class="line"><span><%= t('order.credit') %></span><span>−<%= _mxn(_o.credit_applied) %></span></div><% } %>
+    <div class="line"><span><%= t('order.deposit_due') %></span><b><%= _mxn(_o.deposit_due) %></b></div>
+    <div class="line"><span><%= t('order.deposit_paid') %></span><span><%= _mxn(_o.deposit_paid_amount) %></span></div>
+    <% if (_o.shipping_cost_mxn > 0) { %><div class="line"><span><%= t('order.shipping') %></span><b><%= _mxn(_o.shipping_cost_mxn) %></b></div><% } %>
+    <div class="line"><span><%= t('order.balance_due') %></span><b><%= _mxn(_o.balance_due) %></b></div>
+  </div>
+</div>
+
+<h2 class="section-title"><svg class="ic"><use href="#i-tag"/></svg><%= t('order.items') %></h2>
+<div class="table-scroll"><table class="tbl">
+<thead><tr><th></th><th><%= t('account.inv_product') %></th><th><%= t('account.inv_qty') %></th><th><%= t('product.price') %></th></tr></thead>
+<tbody>
+<% _items.forEach(function(it){ var p = it.product || {}; var u = it.unit_price_mxn; var _s = p.image_path ? String(p.image_path) : ''; if (_s && _s.indexOf('/') !== 0 && _s.indexOf('http') !== 0) _s = '/uploads/' + _s; %>
+<tr><td><% if (_s) { %><img class="thumb" src="<%= _s %>" alt=""><% } %></td>
+<td><b><%= _title(p) %></b></td><td><%= it.qty %></td>
+<td><%= (u != null) ? _mxn(u) : '<span class="badge badge-tbd">♥ ' + t('catalog.tbd_badge') + '</span>' %></td></tr>
+<% }); %>
+</tbody></table></div>
+
+<% if (_pays.length) { %>
+<h2 class="section-title"><svg class="ic"><use href="#i-cam"/></svg><%= t('admin.orders.proofs') %></h2>
+<div class="table-scroll"><table class="tbl">
+<thead><tr><th>#</th><th><%= t('pay.amount') %></th><th><%= t('pay.method_transfer') %> / <%= t('pay.method_card') %></th><th><%= t('order.status') %></th><th><%= t('pay.proof_label') %></th><th></th></tr></thead>
+<tbody>
+<% _pays.forEach(function(p){ %>
+<tr><td><%= p.id %></td><td><b><%= _mxn(p.amount_mxn) %></b> <span class="small muted"><%= p.kind %></span></td>
+<td><%= p.method %></td><td><span class="badge badge-status"><%= p.status %></span></td>
+<td><% if (p.proof_path) { %><a href="/uploads/<%= p.proof_path %>" target="_blank" rel="noopener"><img class="proof-thumb" src="/uploads/<%= p.proof_path %>" alt=""></a><% } else { %>–<% } %></td>
+<td><% if (p.status === 'pending') { %>
+  <form method="POST" action="/admin/pedidos/<%= _o.id %>/confirmar-deposito?payment=<%= p.id %>" class="inline-form">
+    <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+    <button class="btn btn-sm" type="submit"><svg class="ic"><use href="#i-check"/></svg><%= t('admin.orders.confirm_deposit') %></button>
+  </form><% } %></td></tr>
+<% }); %>
+</tbody></table></div>
+<% } %>
+
+<h2 class="section-title"><svg class="ic"><use href="#i-gear"/></svg><%= t('admin.orders.actions') %></h2>
+<div class="form-card">
+
+<% if (_st === 'pending') { %>
+  <form method="POST" action="/admin/pedidos/<%= _o.id %>/aceptar">
+    <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+    <% if (_tbd.length) { %>
+      <h3 style="margin-top:0">♥ <%= t('admin.orders.tbd_price_label') %></h3>
+      <% _tbd.forEach(function(it){ var p = it.product || {}; %>
+        <div class="field"><label><%= _title(p) %> × <%= it.qty %></label>
+        <input type="number" step="0.01" min="0" name="price_<%= it.id %>" placeholder="<%= t('admin.products.price_mxn') %>" required></div>
+      <% }); %>
+    <% } %>
+    <div class="row-actions">
+      <button class="btn" type="submit"><svg class="ic"><use href="#i-check"/></svg><%= t('admin.orders.accept') %></button>
+    </div>
+  </form>
+  <div class="row-actions mt">
+    <form method="POST" action="/admin/pedidos/<%= _o.id %>/rechazar" class="inline-form" data-confirm="<%= t('admin.products.confirm_delete') %>">
+      <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+      <button class="btn btn-danger" type="submit"><%= t('admin.orders.reject') %></button>
+    </form>
+  </div>
+<% } %>
+
+<% if (_st === 'accepted' || _st === 'deposit_paid') { %>
+  <div class="row-actions">
+  <% if (_st === 'accepted' && !_pendPays.length) { %>
+    <span class="notice" style="margin:0">♥ <%= t('order.proof_pending_note') %></span>
+  <% } %>
+  <% if (_st === 'deposit_paid') { %>
+    <form method="POST" action="/admin/pedidos/<%= _o.id %>/marcar-comprado" class="inline-form">
+      <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+      <button class="btn" type="submit"><svg class="ic"><use href="#i-box"/></svg><%= t('admin.orders.mark_purchased') %></button>
+    </form>
+  <% } %>
+    <form method="POST" action="/admin/pedidos/<%= _o.id %>/cancelar" class="inline-form" data-confirm="<%= t('admin.products.confirm_delete') %>">
+      <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+      <button class="btn btn-outline" type="submit"><%= t('misc.cancel') %></button>
+    </form>
+  </div>
+<% } %>
+
+<% if (_st === 'purchased') { %>
+  <form method="POST" action="/admin/pedidos/<%= _o.id %>/fijar-envio">
+    <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+    <div class="field"><label for="shipping_cost_mxn"><%= t('admin.orders.shipping_cost_label') %></label>
+      <input type="number" step="0.01" min="0" id="shipping_cost_mxn" name="shipping_cost_mxn" placeholder="0.00"></div>
+    <button class="btn" type="submit"><svg class="ic"><use href="#i-truck"/></svg><%= t('admin.orders.set_shipping') %></button>
+  </form>
+<% } %>
+
+<% if (_st === 'fully_paid') { %>
+  <div class="row-actions">
+    <form method="POST" action="/admin/pedidos/<%= _o.id %>/marcar-enviado" class="inline-form" style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
+      <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+      <div class="field" style="margin:0"><label for="tracking"><%= t('admin.orders.tracking_label') %></label>
+        <input type="text" id="tracking" name="tracking" required></div>
+      <button class="btn" type="submit"><svg class="ic"><use href="#i-truck"/></svg><%= t('admin.orders.mark_shipped') %></button>
+    </form>
+    <form method="POST" action="/admin/pedidos/<%= _o.id %>/listo-recoger" class="inline-form">
+      <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+      <button class="btn btn-soft" type="submit"><svg class="ic"><use href="#i-bell"/></svg><%= t('admin.orders.mark_pickup_ready') %></button>
+    </form>
+  </div>
+<% } %>
+
+<% if (_st === 'shipped') { %>
+  <form method="POST" action="/admin/pedidos/<%= _o.id %>/cerrar" class="inline-form">
+    <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+    <button class="btn" type="submit"><svg class="ic"><use href="#i-check"/></svg><%= t('admin.orders.close_order') %></button>
+  </form>
+<% } %>
+<% if (_st === 'pickup_ready') { %>
+  <form method="POST" action="/admin/pedidos/<%= _o.id %>/marcar-recogido" class="inline-form">
+    <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+    <button class="btn" type="submit"><svg class="ic"><use href="#i-check"/></svg><%= t('admin.orders.mark_picked_up') %></button>
+  </form>
+<% } %>
+<% if (_st === 'picked_up') { %>
+  <form method="POST" action="/admin/pedidos/<%= _o.id %>/cerrar" class="inline-form">
+    <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+    <button class="btn" type="submit"><svg class="ic"><use href="#i-check"/></svg><%= t('admin.orders.close_order') %></button>
+  </form>
+<% } %>
+
+</div>
+
+</div>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,63 @@
+<%
+var _p = (typeof product !== 'undefined' && product) ? product : null;
+var _isNew = !_p || !_p.id;
+var _action = _isNew ? '/admin/productos' : ('/admin/productos/' + _p.id);
+var _pageTitle = (_isNew ? t('admin.products.new') : t('admin.products.edit')) + ' ♥ ' + t('admin.products.title');
+%>
+<%- include('../partials/header', {pageTitle: _pageTitle, activeNav: 'admin-products'}) %>
+<%
+var _CSRF = (typeof csrfToken !== 'undefined') ? csrfToken : '';
+var _ageGroups = (_p && _p.age_groups) ? String(_p.age_groups).split(',').map(function(s){ return s.trim(); }) : [];
+var _codes = ['<20','20-30','30-40','40-50','50-60','60+'];
+var _ageMap = {'<20':'ages.under20','20-30':'ages.label_20_30','30-40':'ages.label_30_40','40-50':'ages.label_40_50','50-60':'ages.label_50_60','60+':'ages.over60'};
+var _img = (_p && _p.image_path) ? String(_p.image_path) : '';
+if (_img && _img.indexOf('/') !== 0 && _img.indexOf('http') !== 0) _img = '/uploads/' + _img;
+%>
+<div class="admin-shell">
+<%- include('_sidebar', {activeNav: 'admin-products'}) %>
+<div class="admin-main">
+
+<nav class="breadcrumb"><a href="/admin/productos"><%= t('admin.products.title') %></a> › <%= _isNew ? t('admin.products.new') : t('admin.products.edit') %></nav>
+<h1 class="section-title"><svg class="ic"><use href="#i-tag"/></svg><%= _isNew ? t('admin.products.new') : t('admin.products.edit') %></h1>
+
+<form class="form-card" method="POST" action="<%= _action %>" enctype="multipart/form-data">
+  <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+  <div class="two-col">
+    <div class="field"><label for="title_es"><%= t('admin.products.title_es') %></label>
+      <input type="text" id="title_es" name="title_es" value="<%= _p ? (_p.title_es || '') : '' %>" required></div>
+    <div class="field"><label for="title_en"><%= t('admin.products.title_en') %></label>
+      <input type="text" id="title_en" name="title_en" value="<%= _p ? (_p.title_en || '') : '' %>" required></div>
+  </div>
+  <div class="two-col">
+    <div class="field"><label for="desc_es"><%= t('admin.products.desc_es') %></label>
+      <textarea id="desc_es" name="desc_es" required><%= _p ? (_p.desc_es || '') : '' %></textarea></div>
+    <div class="field"><label for="desc_en"><%= t('admin.products.desc_en') %></label>
+      <textarea id="desc_en" name="desc_en" required><%= _p ? (_p.desc_en || '') : '' %></textarea></div>
+  </div>
+  <div class="two-col">
+    <div class="field"><label for="price_mxn"><%= t('admin.products.price_mxn') %></label>
+      <input type="number" step="0.01" min="0" id="price_mxn" name="price_mxn" value="<%= (_p && _p.price_mxn != null) ? _p.price_mxn : '' %>" placeholder="<%= t('admin.products.price_tbd') %>">
+      <div class="hint">♥ <%= t('admin.products.price_tbd') %></div></div>
+    <div class="field"><label for="category"><%= t('admin.products.category') %></label>
+      <input type="text" id="category" name="category" value="<%= _p ? (_p.category || '') : '' %>"></div>
+  </div>
+  <div class="field"><label><%= t('admin.products.age_groups') %></label>
+    <div class="checks-inline">
+      <% _codes.forEach(function(c){ %>
+        <label class="check-pill"><input type="checkbox" name="age_groups" value="<%= c %>" <%= _ageGroups.indexOf(c) >= 0 ? 'checked' : '' %>> <%= t(_ageMap[c]) %></label>
+      <% }); %>
+    </div>
+  </div>
+  <div class="field"><label><%= t('admin.products.image') %></label>
+    <input type="file" name="image" accept="image/*" data-preview="pform-preview">
+    <% if (_img) { %><div class="mt"><img src="<%= _img %>" alt="" style="max-width:160px;border-radius:12px;border:2px solid var(--pg-line)"></div><% } %>
+    <img id="pform-preview" class="img-preview" alt="">
+  </div>
+  <label class="check-pill"><input type="checkbox" name="active" value="1" <%= (!_p || _p.active == 1) ? 'checked' : '' %>> <%= t('admin.products.active') %></label>
+  <p class="mt"><button class="btn" type="submit"><svg class="ic"><use href="#i-check"/></svg><%= t('admin.products.save') %></button>
+  <a class="btn btn-outline" href="/admin/productos"><%= t('misc.cancel') %></a></p>
+</form>
+
+</div>
+</div>
+<%- include('../partials/footer') %>

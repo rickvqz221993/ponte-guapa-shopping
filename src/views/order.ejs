@@ -1,0 +1,93 @@
+<%- include('partials/header', {pageTitle: t('order.title'), activeNav: 'orders'}) %>
+<%
+var _L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+var _CSRF = (typeof csrfToken !== 'undefined') ? csrfToken : '';
+var _o = (typeof order !== 'undefined' && order) ? order : {};
+var _items = (typeof items !== 'undefined' && items) ? items : [];
+var _pays = (typeof payments !== 'undefined' && payments) ? payments : [];
+var _sema = (typeof semaforo !== 'undefined' && semaforo) ? semaforo : null;
+var _mxn = function(n){ return '$' + Number(n || 0).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2}); };
+var _title = function(p){ return (_L === 'en' && p && p.title_en) ? p.title_en : ((p && p.title_es) || ''); };
+var _st = _o.status || 'pending';
+var _pendingProof = _pays.some(function(p){ return p.status === 'pending'; });
+var _steps = ['pending','accepted','deposit_paid','purchased','balance_due','fully_paid','shipped'];
+var _stepIdx = _steps.indexOf(_st);
+var _date = _o.created_at ? new Date(_o.created_at).toLocaleString(_L === 'en' ? 'en-US' : 'es-MX') : '';
+%>
+
+<nav class="breadcrumb"><a href="/"><%= t('misc.home_breadcrumb') %></a> › <a href="/mis-pedidos"><%= t('nav.my_orders') %></a> › #<%= _o.id %></nav>
+
+<div class="order-head">
+  <h1><%= t('order.title') %> #<%= _o.id %></h1>
+  <div>
+    <span class="badge badge-status"><%= t('status.' + _st) %></span>
+    <span class="badge badge-age"><%= t('channel.' + (_o.channel || 'web')) %></span>
+    <% if (_sema) { %><span class="sema sema-<%= _sema %>"><%= t('account.sem_' + _sema) %></span><% } %>
+  </div>
+  <dl class="kv">
+    <dt><%= t('order.date') %></dt><dd><%= _date %></dd>
+    <% if (_o.tracking) { %><dt><%= t('order.tracking') %></dt><dd><b><%= _o.tracking %></b></dd><% } %>
+    <% if (_o.pickup == 1 || _o.pickup === 1) { %><dt>♥</dt><dd><%= t('checkout.pickup_option') %></dd>
+    <% } else if (_o.ship_city) { %><dt><%= t('order.ship_to') %></dt>
+      <dd><%= [_o.ship_name, _o.ship_address, _o.ship_city, _o.ship_postal].filter(Boolean).join(', ') %></dd><% } %>
+  </dl>
+  <% if (_stepIdx >= 0) { %>
+    <div class="steps">
+      <% _steps.forEach(function(s, i){ %>
+        <div class="step <%= i < _stepIdx ? 'done' : '' %> <%= i === _stepIdx ? 'now' : '' %>"><%= t('status.' + s) %></div>
+      <% }); %>
+    </div>
+  <% } %>
+</div>
+
+<% if (_st === 'pickup_ready' && _o.pickup_deadline) { %>
+  <div class="countdown">
+    ♥ <%= t('order.pickup_deadline') %>: <%= new Date(_o.pickup_deadline).toLocaleDateString(_L === 'en' ? 'en-US' : 'es-MX') %><br>
+    <span class="cd-num" data-deadline="<%= _o.pickup_deadline %>">–</span> <%= t('order.pickup_days_left') %>
+  </div>
+<% } %>
+
+<h2 class="section-title"><svg class="ic"><use href="#i-bag"/></svg><%= t('order.items') %></h2>
+<div class="table-scroll"><table class="tbl">
+  <thead><tr><th></th><th><%= t('account.inv_product') %></th><th><%= t('account.inv_qty') %></th><th><%= t('product.price') %></th></tr></thead>
+  <tbody>
+  <% _items.forEach(function(it){ var p = it.product || {}; var u = (it.unit_price_mxn != null) ? it.unit_price_mxn : p.price_mxn; %>
+    <tr>
+      <td><% var _s = p.image_path ? String(p.image_path) : ''; if (_s && _s.indexOf('/') !== 0 && _s.indexOf('http') !== 0) _s = '/uploads/' + _s; %>
+        <% if (_s) { %><img class="thumb" src="<%= _s %>" alt=""><% } else { %><span style="color:var(--pg-soft);font-size:1.6rem">♥</span><% } %></td>
+      <td><b><%= _title(p) %></b></td>
+      <td><%= it.qty %></td>
+      <td><%= (u != null) ? _mxn(u) : ('♥ ' + t('catalog.tbd_badge')) %></td>
+    </tr>
+  <% }); %>
+  </tbody>
+</table></div>
+
+<div class="totals">
+  <div class="line"><span><%= t('order.subtotal') %></span><b><%= _mxn(_o.subtotal_mxn) %></b></div>
+  <% if (_o.credit_applied > 0) { %><div class="line"><span><%= t('order.credit') %></span><span>−<%= _mxn(_o.credit_applied) %></span></div><% } %>
+  <div class="line"><span><%= t('order.deposit_due') %> (60%)</span><b><%= _mxn(_o.deposit_due) %></b></div>
+  <div class="line"><span><%= t('order.deposit_paid') %></span><span><%= _mxn(_o.deposit_paid_amount) %></span></div>
+  <% if (_o.shipping_cost_mxn > 0) { %><div class="line"><span><%= t('order.shipping') %></span><b><%= _mxn(_o.shipping_cost_mxn) %></b></div><% } %>
+  <div class="line"><span><%= t('order.balance_due') %></span><b><%= _mxn(_o.balance_due) %></b></div>
+  <div class="line grand"><span><%= t('order.total_pending') %></span><span><%= _mxn(Math.max(0, (_o.subtotal_mxn - (_o.credit_applied || 0)) - (_o.deposit_paid_amount || 0) + (_o.shipping_cost_mxn || 0))) %></span></div>
+</div>
+
+<% if (_pendingProof) { %><div class="notice warn">♥ <%= t('order.proof_pending_note') %></div><% } %>
+
+<% if (_st === 'accepted') { %>
+  <p><a class="btn btn-block" href="/pedido/<%= _o.id %>/pagar?kind=deposit"><svg class="ic"><use href="#i-check"/></svg><%= t('order.pay_deposit') %>: <%= _mxn(_o.deposit_due) %></a></p>
+<% } %>
+<% if (_st === 'balance_due') { %>
+  <p><a class="btn btn-block" href="/pedido/<%= _o.id %>/pagar?kind=balance"><svg class="ic"><use href="#i-check"/></svg><%= t('order.pay_balance') %>: <%= _mxn(_o.balance_due) %></a></p>
+<% } %>
+
+<div class="two-col">
+  <form method="POST" action="/pedido/<%= _o.id %>/reordenar">
+    <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+    <button class="btn btn-outline btn-block" type="submit"><svg class="ic"><use href="#i-bag"/></svg><%= t('order.reorder') %></button>
+  </form>
+  <p style="margin:0"><a class="btn btn-soft btn-block" href="/mis-pedidos"><svg class="ic"><use href="#i-back"/></svg><%= t('order.back_to_orders') %></a></p>
+</div>
+
+<%- include('partials/footer') %>

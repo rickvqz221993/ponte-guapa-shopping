@@ -1,0 +1,41 @@
+<%- include('../partials/header', {pageTitle: t('admin.orders.title'), activeNav: 'admin-orders'}) %>
+<%
+var _L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+var _orders = (typeof orders !== 'undefined' && orders) ? orders : [];
+var _filter = (typeof filter !== 'undefined' && filter) ? filter : ((typeof status !== 'undefined' && status) ? status : '');
+var _mxn = function(n){ return '$' + Number(n || 0).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2}); };
+var _statuses = ['pending','accepted','deposit_paid','purchased','balance_due','fully_paid','shipped','pickup_ready','picked_up','closed','rejected','cancelled'];
+%>
+<div class="admin-shell">
+<%- include('_sidebar', {activeNav: 'admin-orders'}) %>
+<div class="admin-main">
+
+<h1 class="section-title"><svg class="ic"><use href="#i-bag"/></svg><%= t('admin.orders.title') %></h1>
+
+<div class="toolbar">
+  <a class="btn btn-sm <%= !_filter ? '' : 'btn-outline' %>" href="/admin/pedidos"><%= t('admin.orders.filter_all') %></a>
+  <% _statuses.forEach(function(s){ %>
+    <a class="btn btn-sm <%= _filter === s ? '' : 'btn-outline' %>" href="/admin/pedidos?status=<%= s %>"><%= t('status.' + s) %></a>
+  <% }); %>
+</div>
+
+<div class="table-scroll"><table class="tbl">
+<thead><tr><th>#</th><th><%= t('admin.orders.customer') %></th><th><%= t('order.channel') %></th><th><%= t('order.status') %></th><th><%= t('admin.orders.total') %></th><th><%= t('admin.orders.actions') %></th></tr></thead>
+<tbody>
+<% if (_orders.length) { _orders.forEach(function(o){ %>
+  <tr>
+    <td><b>#<%= o.id %></b><div class="small muted"><%= o.created_at ? new Date(o.created_at).toLocaleDateString(_L === 'en' ? 'en-US' : 'es-MX') : '' %></div></td>
+    <td><%= o.customer_name || o.name || ('#' + o.user_id) %></td>
+    <td><span class="badge badge-status"><%= t('channel.' + (o.channel || 'web')) %></span></td>
+    <td><span class="badge badge-status"><%= t('status.' + (o.status || 'pending')) %></span></td>
+    <td><b><%= _mxn(o.subtotal_mxn) %></b></td>
+    <td><a class="btn btn-sm btn-outline" href="/admin/pedidos/<%= o.id %>"><%= t('admin.customers.view') %></a></td>
+  </tr>
+<% }); } else { %>
+  <tr><td colspan="6" class="center muted">♥ —</td></tr>
+<% } %>
+</tbody></table></div>
+
+</div>
+</div>
+<%- include('../partials/footer') %>

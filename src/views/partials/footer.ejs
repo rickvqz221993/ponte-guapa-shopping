@@ -1,0 +1,38 @@
+<%
+var _T = (typeof t !== 'undefined') ? t : function(k){ return k; };
+var _L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+var _WA = (typeof waNumber !== 'undefined' && waNumber) ? String(waNumber).replace(/\D/g,'') : '971526864330';
+var _U = (typeof user !== 'undefined') ? user : null;
+%>
+</div></main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="hearts" aria-hidden="true">♥ ♥ ♥</div>
+    <nav>
+      <a href="/"><%= _T('nav.home') %></a>
+      <a href="/catalogo"><%= _T('nav.catalog') %></a>
+      <a href="/como-comprar"><%= _T('nav.how_to_buy') %></a>
+      <a href="/politica-envio"><%= _T('nav.shipping_policy') %></a>
+      <a href="/avisos"><%= _T('nav.announcements') %></a>
+      <% if (_U) { %><a href="/mi-cuenta"><%= _T('nav.my_account') %></a><% } %>
+    </nav>
+    <p><%= _T('misc.footer_note') %></p>
+  </div>
+</footer>
+
+<a class="wa-float" href="https://wa.me/<%= _WA %>?text=<%= encodeURIComponent(_T('misc.whatsapp_float')) %>"
+   title="WhatsApp" aria-label="WhatsApp" target="_blank" rel="noopener">
+  <svg class="ic fill" aria-hidden="true"><use href="#i-phone"/></svg>
+</a>
+
+<script src="/app.js" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw.js').catch(function(){});
+  });
+}
+</script>
+</body>
+</html>

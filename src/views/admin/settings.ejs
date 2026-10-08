@@ -1,0 +1,52 @@
+<%- include('../partials/header', {pageTitle: t('admin.settings.title'), activeNav: 'admin-settings'}) %>
+<%
+var _CSRF = (typeof csrfToken !== 'undefined') ? csrfToken : '';
+var _s = (typeof settings !== 'undefined' && settings) ? settings : {};
+var _saved = (typeof saved !== 'undefined' && saved);
+function _sv(k, fb){ return (typeof _s[k] !== 'undefined' && _s[k] !== null && _s[k] !== '') ? _s[k] : (fb || ''); }
+%>
+<div class="admin-shell">
+<%- include('_sidebar', {activeNav: 'admin-settings'}) %>
+<div class="admin-main">
+
+<h1 class="section-title"><svg class="ic"><use href="#i-gear"/></svg><%= t('admin.settings.title') %></h1>
+
+<% if (_saved) { %><div class="alert-ok">♥ <%= t('admin.settings.saved') %></div><% } %>
+
+<form class="form-card" method="POST" action="/admin/config">
+  <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+
+  <div class="field"><label for="alert_emails"><%= t('admin.settings.alert_emails') %></label>
+    <input type="text" id="alert_emails" name="alert_emails" value="<%= _sv('alert_emails', 'rickvqzinfo@gmail.com') %>">
+    <div class="hint"><%= t('admin.settings.alert_emails_hint') %></div></div>
+
+  <div class="field"><label for="whatsapp_number"><%= t('admin.settings.whatsapp_number') %></label>
+    <input type="text" id="whatsapp_number" name="whatsapp_number" value="<%= _sv('whatsapp_number', '+971 52 686 4330') %>"></div>
+
+  <div class="two-col">
+    <div class="field"><label for="accumulation_cap"><%= t('admin.settings.accumulation_cap') %></label>
+      <input type="number" step="0.01" min="0" id="accumulation_cap" name="accumulation_cap" value="<%= _sv('accumulation_cap', '20000') %>"></div>
+    <div class="field"><label for="pickup_days"><%= t('admin.settings.pickup_days') %></label>
+      <input type="number" min="1" id="pickup_days" name="pickup_days" value="<%= _sv('pickup_days', '15') %>"></div>
+  </div>
+
+  <h3>♥ FX <span class="small muted">(MXN)</span></h3>
+  <div class="two-col">
+    <div class="field"><label for="fx_usd"><%= t('admin.settings.fx_usd') %></label>
+      <input type="number" step="0.01" min="0" id="fx_usd" name="fx_usd" value="<%= _sv('fx_usd', '17.00') %>"></div>
+    <div class="field"><label for="fx_cad"><%= t('admin.settings.fx_cad') %></label>
+      <input type="number" step="0.01" min="0" id="fx_cad" name="fx_cad" value="<%= _sv('fx_cad', '12.50') %>"></div>
+    <div class="field"><label for="fx_eur"><%= t('admin.settings.fx_eur') %></label>
+      <input type="number" step="0.01" min="0" id="fx_eur" name="fx_eur" value="<%= _sv('fx_eur', '18.50') %>"></div>
+  </div>
+
+  <div class="field"><label for="new_password"><%= t('admin.settings.new_password') %></label>
+    <input type="password" id="new_password" name="new_password" autocomplete="new-password" placeholder="••••••••">
+    <div class="hint"><%= t('admin.settings.new_password_hint') %></div></div>
+
+  <button class="btn" type="submit"><svg class="ic"><use href="#i-check"/></svg><%= t('admin.settings.save') %></button>
+</form>
+
+</div>
+</div>
+<%- include('../partials/footer') %>

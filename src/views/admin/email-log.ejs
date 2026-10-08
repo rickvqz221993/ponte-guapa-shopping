@@ -1,0 +1,25 @@
+<%- include('../partials/header', {pageTitle: t('admin.emails.title'), activeNav: 'admin-emails'}) %>
+<%
+var _smtp = (typeof smtpOk !== 'undefined') ? smtpOk : ((typeof smtp_ok !== 'undefined') ? smtp_ok : null);
+var _log = (typeof log !== 'undefined' && log) ? log : ((typeof lines !== 'undefined' && lines) ? lines : ((typeof entries !== 'undefined' && entries) ? entries : []));
+if (!Array.isArray(_log)) _log = [];
+%>
+<div class="admin-shell">
+<%- include('_sidebar', {activeNav: 'admin-emails'}) %>
+<div class="admin-main">
+
+<h1 class="section-title"><svg class="ic"><use href="#i-mail"/></svg><%= t('admin.emails.title') %></h1>
+
+<% if (_smtp === true) { %><div class="alert-ok">♥ <%= t('admin.emails.smtp_ok') %></div>
+<% } else if (_smtp === false) { %><div class="notice warn">♥ <%= t('admin.emails.smtp_missing') %></div><% } %>
+
+<% if (_log.length) { %>
+  <div class="log-box"><% _log.forEach(function(line){ %><%= (typeof line === 'string') ? line : JSON.stringify(line) %>
+<% }); %></div>
+<% } else { %>
+  <div class="empty-state"><div class="big">♥</div><p class="muted"><%= t('admin.emails.log_empty') %></p></div>
+<% } %>
+
+</div>
+</div>
+<%- include('../partials/footer') %>

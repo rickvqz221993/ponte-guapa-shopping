@@ -1,0 +1,34 @@
+<%
+var _key = (typeof pageKey !== 'undefined' && pageKey) ? pageKey : 'how_to_buy';
+var _nav = _key === 'shipping_policy' ? 'shipping' : 'how';
+var _title = t('pages.' + _key + '.title');
+%>
+<%- include('partials/header', {pageTitle: _title, activeNav: _nav}) %>
+
+<nav class="breadcrumb"><a href="/"><%= t('misc.home_breadcrumb') %></a> › <%= _title %></nav>
+<h1 class="section-title"><svg class="ic"><use href="#i-heart"/></svg><%= _title %></h1>
+<div class="sparkle-div"><span class="hearts">♥ ✦ ♥</span></div>
+
+<% if (_key === 'how_to_buy') { %>
+  <% var _steps = t('pages.how_to_buy.steps'); if (!Array.isArray(_steps)) _steps = []; %>
+  <div class="how-steps">
+    <% _steps.forEach(function(s, i){ %>
+      <div class="how-step">
+        <span class="n"><%= i + 1 %></span>
+        <div><b><%= s.t %></b><div class="muted"><%= s.d %></div></div>
+      </div>
+    <% }); %>
+  </div>
+<% } else { %>
+  <div class="policy-sec"><p style="white-space:pre-line;margin:0"><%= t('pages.shipping_policy.intro') %></p></div>
+  <% var _secs = t('pages.shipping_policy.sections'); if (!Array.isArray(_secs)) _secs = []; %>
+  <% _secs.forEach(function(s){ %>
+    <section class="policy-sec">
+      <h3 style="margin-top:0">♥ <%= s.h %></h3>
+      <p style="white-space:pre-line;margin:0"><%= s.body %></p>
+    </section>
+  <% }); %>
+  <div class="notice">♥ <%= t('pages.shipping_policy.boxes_note') %></div>
+<% } %>
+
+<%- include('partials/footer') %>

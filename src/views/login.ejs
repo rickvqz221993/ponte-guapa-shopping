@@ -1,0 +1,28 @@
+<%- include('partials/header', {pageTitle: t('auth.login_title'), activeNav: 'account'}) %>
+<%
+var _CSRF = (typeof csrfToken !== 'undefined') ? csrfToken : '';
+var _err = (typeof error !== 'undefined' && error) ? error : null;
+var _oldEmail = (typeof oldEmail !== 'undefined' && oldEmail) ? oldEmail : ((typeof old !== 'undefined' && old && old.email) ? old.email : '');
+%>
+
+<h1 class="section-title"><svg class="ic"><use href="#i-heart"/></svg><%= t('auth.login_title') %></h1>
+<div class="sparkle-div"><span class="hearts">♥ ✦ ♥</span></div>
+
+<div class="form-card" style="max-width:480px;margin-left:auto;margin-right:auto">
+  <% if (_err) { %><div class="form-errors">♥ <%= (typeof t === 'function' && String(_err).indexOf('auth.') === 0) ? t(_err) : _err %></div><% } %>
+  <form method="POST" action="/login">
+    <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+    <div class="field">
+      <label for="email"><%= t('auth.email') %></label>
+      <input type="email" id="email" name="email" value="<%= _oldEmail %>" required autocomplete="email">
+    </div>
+    <div class="field">
+      <label for="password"><%= t('auth.password') %></label>
+      <input type="password" id="password" name="password" required autocomplete="current-password">
+    </div>
+    <button class="btn btn-block" type="submit"><svg class="ic"><use href="#i-heart"/></svg><%= t('auth.login_btn') %></button>
+  </form>
+  <p class="center mt"><%= t('auth.no_account') %> <a href="/registro"><b><%= t('auth.register_btn') %></b></a></p>
+</div>
+
+<%- include('partials/footer') %>

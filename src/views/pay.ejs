@@ -1,0 +1,59 @@
+<%- include('partials/header', {pageTitle: t('pay.deposit_title'), activeNav: 'orders'}) %>
+<%
+var _CSRF = (typeof csrfToken !== 'undefined') ? csrfToken : '';
+var _o = (typeof order !== 'undefined' && order) ? order : {};
+var _kind = (typeof kind !== 'undefined' && kind) ? kind : 'deposit';
+var _amount = (typeof amount !== 'undefined' && amount != null) ? Number(amount) : 0;
+var _stripe = (typeof stripeEnabled !== 'undefined' && stripeEnabled);
+var _instr = (typeof transferInstructions !== 'undefined' && transferInstructions) ? transferInstructions : t('pay.transfer_instructions');
+var _FX = (typeof fx !== 'undefined' && fx) ? fx : {usd: 17, cad: 12.5, eur: 18.5};
+var _mxn = function(n){ return '$' + Number(n || 0).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2}); };
+var _fxAmt = function(rate){ return (Number(rate) > 0) ? (_amount / Number(rate)).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2}) : '–'; };
+%>
+
+<nav class="breadcrumb"><a href="/mis-pedidos"><%= t('nav.my_orders') %></a> › <a href="/pedido/<%= _o.id %>">#<%= _o.id %></a> › <%= t('pay.' + (_kind === 'balance' ? 'balance_title' : 'deposit_title')) %></nav>
+
+<div class="pay-box">
+  <h1 style="margin-top:0">♥ <%= t('pay.' + (_kind === 'balance' ? 'balance_title' : 'deposit_title')) %> ♥</h1>
+  <div class="muted"><%= t('pay.amount') %></div>
+  <div class="pay-amount"><%= _mxn(_amount) %> <span class="small muted"><%= t('misc.mxn') %></span></div>
+  <div class="fx-row">
+    <span class="fx-chip"><%= t('misc.usd') %>: <%= _fxAmt(_FX.usd) %></span>
+    <span class="fx-chip"><%= t('misc.cad') %>: <%= _fxAmt(_FX.cad) %></span>
+    <span class="fx-chip"><%= t('misc.eur') %>: <%= _fxAmt(_FX.eur) %></span>
+  </div>
+  <p class="small muted"><%= t('misc.currency_note') %></p>
+</div>
+
+<div class="two-col">
+  <div class="form-card">
+    <h3 style="margin-top:0"><svg class="ic"><use href="#i-check"/></svg> <%= t('pay.method_card') %></h3>
+    <p class="muted small"><%= t('pay.card_note') %></p>
+    <% if (_stripe) { %>
+      <a class="btn btn-block" href="/pedido/<%= _o.id %>/pagar-tarjeta?kind=<%= _kind %>"><svg class="ic"><use href="#i-check"/></svg><%= t('pay.method_card') %></a>
+    <% } else { %>
+      <div class="notice warn"><%= t('pay.stripe_unavailable') %></div>
+    <% } %>
+  </div>
+
+  <div class="form-card">
+    <h3 style="margin-top:0"><svg class="ic"><use href="#i-send"/></svg> <%= t('pay.method_transfer') %></h3>
+    <p class="muted small"><%= t('pay.transfer_note') %></p>
+    <div class="transfer-box"><%= _instr %></div>
+    <form method="POST" action="/pedido/<%= _o.id %>/pagar-transferencia" enctype="multipart/form-data">
+      <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+      <input type="hidden" name="kind" value="<%= _kind %>">
+      <div class="field">
+        <label for="proof"><%= t('pay.proof_label') %></label>
+        <input type="file" id="proof" name="proof" accept="image/*" data-preview="proof-preview" required>
+        <div class="hint"><%= t('pay.proof_hint') %></div>
+        <img id="proof-preview" class="img-preview" alt="">
+      </div>
+      <button class="btn btn-block" type="submit"><svg class="ic"><use href="#i-cam"/></svg><%= t('pay.submit_proof') %></button>
+    </form>
+  </div>
+</div>
+
+<p class="center"><a class="btn btn-soft btn-sm" href="/pedido/<%= _o.id %>"><svg class="ic"><use href="#i-back"/></svg><%= t('pay.back_to_order') %></a></p>
+
+<%- include('partials/footer') %>

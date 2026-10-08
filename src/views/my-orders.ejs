@@ -1,0 +1,31 @@
+<%- include('partials/header', {pageTitle: t('nav.my_orders'), activeNav: 'orders'}) %>
+<%
+var _orders = (typeof orders !== 'undefined' && orders) ? orders : [];
+var _mxn = function(n){ return '$' + Number(n || 0).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2}); };
+var _L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+%>
+
+<nav class="breadcrumb"><a href="/"><%= t('misc.home_breadcrumb') %></a> › <a href="/mi-cuenta"><%= t('nav.my_account') %></a> › <%= t('nav.my_orders') %></nav>
+<h1 class="section-title"><svg class="ic"><use href="#i-bag"/></svg><%= t('nav.my_orders') %></h1>
+<div class="sparkle-div"><span class="hearts">♥ ✦ ♥</span></div>
+
+<% if (_orders.length) { %>
+  <% _orders.forEach(function(o){ %>
+    <a href="/pedido/<%= o.id %>" class="card" style="margin-bottom:12px;text-decoration:none;color:inherit">
+      <div class="card-body" style="flex-direction:row;align-items:center;gap:12px">
+        <div style="font-size:2rem;color:var(--pg-soft)">♥</div>
+        <div style="flex:1">
+          <b>#<%= o.id %></b>
+          <span class="badge badge-status"><%= t('status.' + (o.status || 'pending')) %></span>
+          <div class="small muted"><%= o.created_at ? new Date(o.created_at).toLocaleDateString(_L === 'en' ? 'en-US' : 'es-MX') : '' %> · <%= t('channel.' + (o.channel || 'web')) %></div>
+        </div>
+        <div class="card-price"><%= _mxn(o.subtotal_mxn) %></div>
+      </div>
+    </a>
+  <% }); %>
+<% } else { %>
+  <div class="empty-state"><div class="big">♥</div>
+    <p><a class="btn" href="/catalogo"><%= t('cart.empty_cta') %></a></p></div>
+<% } %>
+
+<%- include('partials/footer') %>

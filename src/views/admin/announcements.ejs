@@ -1,0 +1,42 @@
+<%- include('../partials/header', {pageTitle: t('admin.announcements.title'), activeNav: 'admin-announce'}) %>
+<%
+var _L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+var _CSRF = (typeof csrfToken !== 'undefined') ? csrfToken : '';
+var _ann = (typeof announcements !== 'undefined' && announcements) ? announcements : [];
+%>
+<div class="admin-shell">
+<%- include('_sidebar', {activeNav: 'admin-announce'}) %>
+<div class="admin-main">
+
+<h1 class="section-title"><svg class="ic"><use href="#i-bell"/></svg><%= t('admin.announcements.title') %></h1>
+
+<form class="form-card" method="POST" action="/admin/avisos">
+  <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+  <div class="two-col">
+    <div class="field"><label for="title_es"><%= t('admin.announcements.ta_title_es') %></label>
+      <input type="text" id="title_es" name="title_es" required></div>
+    <div class="field"><label for="title_en"><%= t('admin.announcements.ta_title_en') %></label>
+      <input type="text" id="title_en" name="title_en" required></div>
+  </div>
+  <div class="two-col">
+    <div class="field"><label for="body_es"><%= t('admin.announcements.ta_body_es') %></label>
+      <textarea id="body_es" name="body_es" required></textarea></div>
+    <div class="field"><label for="body_en"><%= t('admin.announcements.ta_body_en') %></label>
+      <textarea id="body_en" name="body_en" required></textarea></div>
+  </div>
+  <button class="btn" type="submit"><svg class="ic"><use href="#i-send"/></svg><%= t('admin.announcements.publish') %></button>
+</form>
+
+<% if (_ann.length) { %>
+  <% _ann.forEach(function(a){ %>
+    <article class="announce">
+      <h3><%= (_L === 'en' && a.title_en) ? a.title_en : a.title_es %></h3>
+      <% if (a.created_at) { %><time><%= new Date(a.created_at).toLocaleDateString(_L === 'en' ? 'en-US' : 'es-MX') %></time><% } %>
+      <p style="white-space:pre-line"><%= (_L === 'en' && a.body_en) ? a.body_en : a.body_es %></p>
+    </article>
+  <% }); %>
+<% } %>
+
+</div>
+</div>
+<%- include('../partials/footer') %>

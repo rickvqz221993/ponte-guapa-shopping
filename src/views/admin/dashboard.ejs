@@ -1,0 +1,69 @@
+<%- include('../partials/header', {pageTitle: t('admin.dashboard.title'), activeNav: 'admin-dashboard'}) %>
+<%
+var _L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+var _pending = (typeof pendingOrders !== 'undefined' && pendingOrders) ? pendingOrders : [];
+var _reds = (typeof redFlagCustomers !== 'undefined' && redFlagCustomers) ? redFlagCustomers : [];
+var _proofs = (typeof pendingProofs !== 'undefined' && pendingProofs) ? pendingProofs : [];
+var _overdue = (typeof overduePickups !== 'undefined' && overduePickups) ? overduePickups : [];
+var _stats = (typeof stats !== 'undefined' && stats) ? stats : {};
+var _mxn = function(n){ return '$' + Number(n || 0).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2}); };
+%>
+<div class="admin-shell">
+<%- include('_sidebar', {activeNav: 'admin-dashboard'}) %>
+<div class="admin-main">
+
+<h1 class="section-title"><svg class="ic"><use href="#i-chart"/></svg><%= t('admin.dashboard.title') %></h1>
+
+<div class="stat-grid">
+  <div class="stat"><div class="v"><%= _stats.customers != null ? _stats.customers : '–' %></div><div class="l"><%= t('admin.dashboard.customers') %></div></div>
+  <div class="stat"><div class="v"><%= _stats.orders != null ? _stats.orders : (_stats.orders_open != null ? _stats.orders_open : '–') %></div><div class="l"><%= t('admin.dashboard.orders_open') %></div></div>
+  <div class="stat"><div class="v"><%= _stats.openRevenue != null ? _mxn(_stats.openRevenue) : (_stats.revenue_open != null ? _mxn(_stats.revenue_open) : '–') %></div><div class="l"><%= t('admin.dashboard.revenue_open') %></div></div>
+  <div class="stat"><div class="v"><%= _pending.length %></div><div class="l"><%= t('admin.dashboard.queue') %></div></div>
+</div>
+
+<% if (_overdue.length) { %>
+  <h2 class="section-title"><svg class="ic"><use href="#i-clock"/></svg><%= t('admin.dashboard.overdue_pickups') %></h2>
+  <div class="table-scroll"><table class="tbl"><thead><tr><th>#</th><th><%= t('admin.orders.customer') %></th><th><%= t('order.pickup_deadline') %></th><th></th></tr></thead>
+  <tbody><% _overdue.forEach(function(o){ %>
+    <tr><td><b>#<%= o.id %></b></td><td><%= o.customer_name || o.name || ('#' + o.user_id) %></td>
+    <td><span class="flag-red"><%= o.pickup_deadline ? new Date(o.pickup_deadline).toLocaleDateString(_L === 'en' ? 'en-US' : 'es-MX') : '' %></span></td>
+    <td><a class="btn btn-sm btn-outline" href="/admin/pedidos/<%= o.id %>"><%= t('admin.customers.view') %></a></td></tr>
+  <% }); %></tbody></table></div>
+<% } %>
+
+<h2 class="section-title"><svg class="ic"><use href="#i-bag"/></svg><%= t('admin.dashboard.queue') %></h2>
+<% if (_pending.length) { %>
+<div class="table-scroll"><table class="tbl"><thead><tr><th>#</th><th><%= t('admin.orders.customer') %></th><th><%= t('order.channel') %></th><th><%= t('admin.orders.total') %></th><th></th></tr></thead>
+<tbody><% _pending.forEach(function(o){ %>
+  <tr><td><b>#<%= o.id %></b></td><td><%= o.customer_name || o.name || ('#' + o.user_id) %></td>
+  <td><span class="badge badge-status"><%= t('channel.' + (o.channel || 'web')) %></span></td>
+  <td><b><%= _mxn(o.subtotal_mxn) %></b></td>
+  <td><a class="btn btn-sm" href="/admin/pedidos/<%= o.id %>"><%= t('admin.customers.view') %></a></td></tr>
+<% }); %></tbody></table></div>
+<p><a class="btn btn-sm btn-outline" href="/admin/pedidos"><%= t('admin.dashboard.view_all') %></a></p>
+<% } else { %><div class="notice">♥ —</div><% } %>
+
+<h2 class="section-title"><svg class="ic"><use href="#i-cam"/></svg><%= t('admin.dashboard.proofs') %></h2>
+<% if (_proofs.length) { %>
+<div class="table-scroll"><table class="tbl"><thead><tr><th>#</th><th><%= t('pay.amount') %></th><th><%= t('pay.proof_label') %></th><th></th></tr></thead>
+<tbody><% _proofs.forEach(function(p){ %>
+  <tr><td><b>#<%= p.order_id %></b></td><td><b><%= _mxn(p.amount_mxn) %></b> <span class="small muted"><%= p.kind %></span></td>
+  <td><% if (p.proof_path) { %><a href="/uploads/<%= p.proof_path %>" target="_blank" rel="noopener"><img class="proof-thumb" src="/uploads/<%= p.proof_path %>" alt=""></a><% } %></td>
+  <td><a class="btn btn-sm" href="/admin/pedidos/<%= p.order_id %>"><%= t('admin.customers.view') %></a></td></tr>
+<% }); %></tbody></table></div>
+<% } else { %><div class="notice">♥ —</div><% } %>
+
+<h2 class="section-title"><svg class="ic"><use href="#i-user"/></svg><%= t('admin.dashboard.red_flags') %></h2>
+<% if (_reds.length) { %>
+<div class="table-scroll"><table class="tbl"><thead><tr><th><%= t('admin.orders.customer') %></th><th><%= t('account.accumulated') %></th><th><%= t('account.semaforo') %></th><th></th></tr></thead>
+<tbody><% _reds.forEach(function(c){ %>
+  <tr><td><b><%= c.name %></b><div class="small muted"><%= c.email %></div></td>
+  <td><span class="flag-red"><%= _mxn(c.acumulado != null ? c.acumulado : c.accumulated) %></span></td>
+  <td><span class="sema sema-red"><%= t('account.sem_red') %></span></td>
+  <td><a class="btn btn-sm btn-outline" href="/admin/clientes/<%= c.id %>"><%= t('admin.customers.view') %></a></td></tr>
+<% }); %></tbody></table></div>
+<% } else { %><div class="notice">♥ —</div><% } %>
+
+</div>
+</div>
+<%- include('../partials/footer') %>

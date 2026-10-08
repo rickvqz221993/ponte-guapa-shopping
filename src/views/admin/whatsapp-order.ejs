@@ -1,0 +1,68 @@
+<%- include('../partials/header', {pageTitle: t('admin.whatsapp_order.title'), activeNav: 'admin-wa'}) %>
+<%
+var _L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+var _CSRF = (typeof csrfToken !== 'undefined') ? csrfToken : '';
+var _customers = (typeof customers !== 'undefined' && customers) ? customers : [];
+var _products = (typeof products !== 'undefined' && products) ? products : [];
+var _title = function(p){ return (_L === 'en' && p.title_en) ? p.title_en : (p.title_es || ''); };
+var _mxn = function(n){ return '$' + Number(n || 0).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2}); };
+%>
+<div class="admin-shell">
+<%- include('_sidebar', {activeNav: 'admin-wa'}) %>
+<div class="admin-main">
+
+<h1 class="section-title"><svg class="ic"><use href="#i-phone"/></svg><%= t('admin.whatsapp_order.title') %></h1>
+<div class="sparkle-div"><span class="hearts">♥ ✦ ♥</span></div>
+
+<form class="form-card" method="POST" action="/admin/pedido-whatsapp">
+  <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+  <div class="field">
+    <label for="customer_id"><%= t('admin.whatsapp_order.customer') %></label>
+    <select id="customer_id" name="customer_id" required>
+      <option value="">—</option>
+      <% _customers.forEach(function(c){ %>
+        <option value="<%= c.id %>"><%= c.name %> — <%= c.email %></option>
+      <% }); %>
+    </select>
+  </div>
+
+  <h3>♥ <%= t('admin.whatsapp_order.items') %></h3>
+  <div id="wo-rows">
+    <% for (var i = 0; i < 3; i++) { %>
+      <div class="wo-row two-col" style="grid-template-columns:1fr 110px;align-items:end">
+        <div class="field" style="margin-bottom:8px"><label class="small"><%= t('account.inv_product') %></label>
+          <select name="items[<%= i %>][product_id]">
+            <option value="">—</option>
+            <% _products.forEach(function(p){ %>
+              <option value="<%= p.id %>"><%= _title(p) %><% if (p.price_mxn != null) { %> — <%= _mxn(p.price_mxn) %><% } %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:8px"><label class="small"><%= t('account.inv_qty') %></label>
+          <input type="number" name="items[<%= i %>][qty]" value="1" min="1" max="99"></div>
+      </div>
+    <% } %>
+  </div>
+  <template id="wo-row-template">
+    <div class="two-col" style="grid-template-columns:1fr 110px 44px;align-items:end">
+      <div class="field" style="margin-bottom:8px"><label class="small"><%= t('account.inv_product') %></label>
+        <select name="items[__N__][product_id]">
+          <option value="">—</option>
+          <% _products.forEach(function(p){ %>
+            <option value="<%= p.id %>"><%= _title(p) %><% if (p.price_mxn != null) { %> — <%= _mxn(p.price_mxn) %><% } %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom:8px"><label class="small"><%= t('account.inv_qty') %></label>
+        <input type="number" name="items[__N__][qty]" value="1" min="1" max="99"></div>
+      <div class="field" style="margin-bottom:8px"><button type="button" class="btn btn-sm btn-danger" data-wo-remove aria-label="×">×</button></div>
+    </div>
+  </template>
+  <p><button type="button" class="btn btn-sm btn-outline" id="wo-add-row"><svg class="ic"><use href="#i-plus"/></svg><%= t('admin.whatsapp_order.items') %></button></p>
+
+  <button class="btn btn-block" type="submit"><svg class="ic"><use href="#i-check"/></svg><%= t('admin.whatsapp_order.create') %></button>
+</form>
+
+</div>
+</div>
+<%- include('../partials/footer') %>

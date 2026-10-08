@@ -1,0 +1,8 @@
+<%- include('partials/header', {pageTitle: '404', activeNav: ''}) %>
+<div class="empty-state" style="margin-top:40px">
+  <div class="big">♥</div>
+  <h1 style="margin:8px 0">404</h1>
+  <p><b><%= t('misc.error_404') %></b></p>
+  <p><a class="btn" href="/"><%= t('nav.home') %></a></p>
+</div>
+<%- include('partials/footer') %>

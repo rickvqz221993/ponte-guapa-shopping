@@ -1,0 +1,25 @@
+<%- include('partials/header', {pageTitle: t('nav.announcements'), activeNav: 'announce'}) %>
+<%
+var _L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+var _ann = (typeof announcements !== 'undefined' && announcements) ? announcements : [];
+var _atitle = function(a){ return (_L === 'en' && a.title_en) ? a.title_en : a.title_es; };
+var _abody = function(a){ return (_L === 'en' && a.body_en) ? a.body_en : a.body_es; };
+%>
+
+<h1 class="section-title"><svg class="ic"><use href="#i-bell"/></svg><%= t('nav.announcements') %></h1>
+<div class="sparkle-div"><span class="hearts">♥ ✦ ♥</span></div>
+
+<% if (_ann.length) { %>
+  <% _ann.forEach(function(a){ %>
+    <article class="announce">
+      <div class="small" style="color:var(--pg-soft);font-size:1.4rem">♥</div>
+      <h3><%= _atitle(a) %></h3>
+      <% if (a.created_at) { %><time><%= new Date(a.created_at).toLocaleDateString(_L === 'en' ? 'en-US' : 'es-MX') %></time><% } %>
+      <p style="white-space:pre-line"><%= _abody(a) %></p>
+    </article>
+  <% }); %>
+<% } else { %>
+  <div class="empty-state"><div class="big">♥</div></div>
+<% } %>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,12 @@
+<%-
+/*
+ * admin/layout.ejs — thin wrapper for optional backend layout injection.
+ * Admin content views are self-contained: they include ../partials/header,
+ * then _sidebar, their content, then ../partials/footer.
+ */
+%><%- include('../partials/header', {pageTitle: (typeof t !== 'undefined' ? t('nav.admin') : 'Admin'), activeNav: (typeof activeNav !== 'undefined' ? activeNav : 'admin')}) %>
+<div class="admin-shell">
+  <%- include('_sidebar') %>
+  <div class="admin-main"><%- typeof body !== 'undefined' ? body : '' %></div>
+</div>
+<%- include('../partials/footer') %>

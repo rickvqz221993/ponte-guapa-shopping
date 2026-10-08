@@ -1,0 +1,28 @@
+<%
+/* Shared admin sidebar (included by every admin/* view). */
+var _T = (typeof t !== 'undefined') ? t : function(k){ return k; };
+var _CSRF = (typeof csrfToken !== 'undefined') ? csrfToken : '';
+var _activeNav = (typeof activeNav !== 'undefined' && activeNav) ? activeNav : '';
+var _items = [
+  ['admin-dashboard', '/admin', 'i-chart', _T('admin.dashboard.title')],
+  ['admin-orders', '/admin/pedidos', 'i-bag', _T('admin.orders.title')],
+  ['admin-products', '/admin/productos', 'i-tag', _T('admin.products.title')],
+  ['admin-customers', '/admin/clientes', 'i-user', _T('admin.customers.title')],
+  ['admin-wa', '/admin/pedido-whatsapp', 'i-phone', _T('admin.whatsapp_order.title')],
+  ['admin-announce', '/admin/avisos', 'i-bell', _T('admin.announcements.title')],
+  ['admin-settings', '/admin/config', 'i-gear', _T('admin.settings.title')],
+  ['admin-emails', '/admin/emails', 'i-mail', _T('admin.emails.title')]
+];
+%>
+<aside class="admin-side">
+  <h3>♥ <%= _T('nav.admin') %></h3>
+  <nav class="admin-nav">
+    <% _items.forEach(function(it){ %>
+      <a href="<%= it[1] %>" class="<%= _activeNav === it[0] ? 'on' : '' %>"><svg class="ic"><use href="#<%= it[2] %>"/></svg><%= it[3] %></a>
+    <% }); %>
+    <a href="/" target="_blank" rel="noopener"><svg class="ic"><use href="#i-globe"/></svg><%= _T('misc.home_breadcrumb') %></a>
+  </nav>
+  <form method="POST" action="/logout" class="mt"><input type="hidden" name="_csrf" value="<%= _CSRF %>">
+    <button type="submit" class="btn btn-soft btn-sm btn-block"><svg class="ic"><use href="#i-logout"/></svg><%= _T('nav.logout') %></button>
+  </form>
+</aside>

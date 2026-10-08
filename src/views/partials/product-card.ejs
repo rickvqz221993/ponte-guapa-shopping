@@ -1,0 +1,39 @@
+<%
+/* Shared product card. Called as: include('partials/product-card', {product: p}) */
+var _L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+var _T = (typeof t !== 'undefined') ? t : function(k){ return k; };
+var _CSRF = (typeof csrfToken !== 'undefined') ? csrfToken : '';
+var _p = (typeof product !== 'undefined' && product) ? product : null;
+var _mxn = function(n){ return '$' + Number(n || 0).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2}); };
+var _src = '';
+if (_p && _p.image_path) {
+  _src = String(_p.image_path);
+  if (_src.indexOf('/') !== 0 && _src.indexOf('http') !== 0) _src = '/uploads/' + _src;
+}
+var _title = _p ? ((_L === 'en' && _p.title_en) ? _p.title_en : (_p.title_es || '')) : '';
+%>
+<% if (_p) { %>
+<article class="card">
+  <a class="card-img" href="/producto/<%= _p.id %>" aria-label="<%= _title %>">
+    <% if (_src) { %><img src="<%= _src %>" alt="" loading="lazy"><% } else { %><span class="noimg">♥</span><% } %>
+  </a>
+  <div class="card-body">
+    <h3 class="card-title"><a href="/producto/<%= _p.id %>"><%= _title %></a></h3>
+    <div>
+      <% if (_p.price_mxn === null || typeof _p.price_mxn === 'undefined') { %>
+        <span class="badge badge-tbd">♥ <%= _T('catalog.tbd_badge') %></span>
+      <% } else { %>
+        <span class="card-price"><%= _mxn(_p.price_mxn) %></span>
+      <% } %>
+    </div>
+    <div class="card-actions">
+      <a class="btn btn-sm btn-outline" href="/producto/<%= _p.id %>"><%= _T('catalog.view') %></a>
+      <form method="POST" action="/carrito/agregar/<%= _p.id %>" style="flex:1;display:flex;margin:0">
+        <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+        <input type="hidden" name="qty" value="1">
+        <button class="btn btn-sm" style="flex:1" type="submit"><svg class="ic"><use href="#i-bag"/></svg><%= _T('catalog.add') %></button>
+      </form>
+    </div>
+  </div>
+</article>
+<% } %>

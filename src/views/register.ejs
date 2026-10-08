@@ -1,0 +1,45 @@
+<%- include('partials/header', {pageTitle: t('auth.register_title'), activeNav: 'account'}) %>
+<%
+var _CSRF = (typeof csrfToken !== 'undefined') ? csrfToken : '';
+var _errors = (typeof errors !== 'undefined' && errors) ? errors : [];
+var _old = (typeof old !== 'undefined' && old) ? old : {};
+function _v(k){ return (typeof _old[k] !== 'undefined' && _old[k] !== null) ? _old[k] : ''; }
+%>
+
+<h1 class="section-title"><svg class="ic"><use href="#i-heart"/></svg><%= t('auth.register_title') %></h1>
+<div class="sparkle-div"><span class="hearts">♥ ✦ ♥</span></div>
+
+<div class="form-card" style="max-width:640px;margin-left:auto;margin-right:auto">
+  <% if (_errors.length) { %>
+    <div class="form-errors"><% _errors.forEach(function(e){ %><div>♥ <%= (typeof t === 'function' && String(e).indexOf('auth.') === 0) ? t(e) : e %></div><% }); %></div>
+  <% } %>
+  <form method="POST" action="/registro">
+    <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+    <div class="two-col">
+      <div class="field"><label for="name"><%= t('auth.name') %></label><input type="text" id="name" name="name" value="<%= _v('name') %>" required autocomplete="name"></div>
+      <div class="field"><label for="email"><%= t('auth.email') %></label><input type="email" id="email" name="email" value="<%= _v('email') %>" required autocomplete="email"></div>
+      <div class="field"><label for="whatsapp"><%= t('auth.whatsapp') %></label><input type="tel" id="whatsapp" name="whatsapp" value="<%= _v('whatsapp') %>" required autocomplete="tel"></div>
+      <div class="field"><label for="phone"><%= t('auth.phone') %></label><input type="tel" id="phone" name="phone" value="<%= _v('phone') %>" required autocomplete="tel"></div>
+      <div class="field"><label for="birthdate"><%= t('auth.birthdate') %></label><input type="date" id="birthdate" name="birthdate" value="<%= _v('birthdate') %>" required></div>
+      <div class="field"><label for="found_via"><%= t('auth.found_via') %></label>
+        <select id="found_via" name="found_via">
+          <option value="social" <%= _v('found_via') === 'social' ? 'selected' : '' %>><%= t('auth.found_social') %></option>
+          <option value="recommendation" <%= _v('found_via') === 'recommendation' ? 'selected' : '' %>><%= t('auth.found_recommendation') %></option>
+          <option value="other" <%= _v('found_via') === 'other' ? 'selected' : '' %>><%= t('auth.found_other') %></option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label for="recommended_by"><%= t('auth.recommended_by_label') %> <span class="opt">(<%= t('misc.optional') %>)</span></label>
+      <input type="text" id="recommended_by" name="recommended_by" value="<%= _v('recommended_by') %>" placeholder="<%= t('auth.recommended_by_ph') %>"></div>
+    <div class="field"><label for="interests"><%= t('auth.interests') %> <span class="opt">(<%= t('misc.optional') %>)</span></label>
+      <input type="text" id="interests" name="interests" value="<%= _v('interests') %>" placeholder="<%= t('auth.interests_ph') %>"></div>
+    <div class="two-col">
+      <div class="field"><label for="password"><%= t('auth.password') %></label><input type="password" id="password" name="password" required autocomplete="new-password"></div>
+      <div class="field"><label for="password2"><%= t('auth.password2') %></label><input type="password" id="password2" name="password2" required autocomplete="new-password"></div>
+    </div>
+    <button class="btn btn-block" type="submit"><svg class="ic"><use href="#i-heart"/></svg><%= t('auth.register_btn') %></button>
+  </form>
+  <p class="center mt"><%= t('auth.have_account') %> <a href="/login"><b><%= t('auth.login_btn') %></b></a></p>
+</div>
+
+<%- include('partials/footer') %>

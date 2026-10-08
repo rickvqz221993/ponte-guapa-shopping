@@ -1,0 +1,82 @@
+<%- include('../partials/header', {pageTitle: t('admin.customers.title'), activeNav: 'admin-customers'}) %>
+<%
+var _L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+var _CSRF = (typeof csrfToken !== 'undefined') ? csrfToken : '';
+var _c = (typeof customer !== 'undefined' && customer) ? customer : {};
+var _orders = (typeof orders !== 'undefined' && orders) ? orders : [];
+var _pat = (typeof patterns !== 'undefined' && patterns) ? patterns : {};
+var _acc = (typeof acumulado !== 'undefined' && acumulado != null) ? Number(acumulado) : 0;
+var _sema = (typeof semaforo !== 'undefined' && semaforo) ? semaforo : ((_c.semaforo || _c.sema) || 'green');
+var _ref = (typeof referral !== 'undefined' && referral) ? referral : null;
+var _mxn = function(n){ return '$' + Number(n || 0).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2}); };
+%>
+<div class="admin-shell">
+<%- include('_sidebar', {activeNav: 'admin-customers'}) %>
+<div class="admin-main">
+
+<nav class="breadcrumb"><a href="/admin/clientes"><%= t('admin.customers.title') %></a> › <%= _c.name %></nav>
+<h1 class="section-title"><svg class="ic"><use href="#i-user"/></svg>♥ <%= _c.name %></h1>
+
+<div class="two-col">
+  <div class="order-head" style="margin:0">
+    <dl class="kv">
+      <dt><%= t('auth.email') %></dt><dd><%= _c.email || '–' %></dd>
+      <dt><%= t('auth.whatsapp') %></dt><dd><%= _c.whatsapp || '–' %></dd>
+      <dt><%= t('auth.phone') %></dt><dd><%= _c.phone || '–' %></dd>
+      <dt><%= t('admin.customers.age') %></dt><dd><%= (_c.age != null) ? _c.age : '–' %></dd>
+      <dt><%= t('admin.customers.member_since') %></dt><dd><%= _c.created_at ? new Date(_c.created_at).toLocaleDateString(_L === 'en' ? 'en-US' : 'es-MX') : '–' %></dd>
+      <dt><%= t('admin.customers.found_via') %></dt><dd><%= _c.found_via || '–' %><% if (_c.recommended_by) { %> (<%= t('admin.customers.via') %>: <%= _c.recommended_by %>)<% } %></dd>
+      <% if (_c.product_interests) { %><dt><%= t('admin.customers.interests') %></dt><dd><%= _c.product_interests %></dd><% } %>
+      <% if (_ref) { %><dt>♥</dt><dd><%= _ref %></dd><% } %>
+      <dt><%= t('account.credit') %></dt><dd><b><%= _mxn(_c.credit_mxn) %></b></dd>
+    </dl>
+  </div>
+  <div>
+    <div class="sema-card" style="margin:0 0 14px">
+      <div class="muted small"><b><%= t('admin.customers.accumulated') %></b></div>
+      <div class="acc"><%= _mxn(_acc) %></div>
+      <div class="mt"><span class="sema sema-<%= _sema %>"><%= t('account.sem_' + _sema) %></span></div>
+    </div>
+    <div class="stat-grid" style="grid-template-columns:repeat(2,1fr)">
+      <div class="stat"><div class="v"><%= _pat.totalOrders != null ? _pat.totalOrders : _orders.length %></div><div class="l"><%= t('admin.customers.total_orders') %></div></div>
+      <div class="stat"><div class="v"><%= _pat.totalSpent != null ? _mxn(_pat.totalSpent) : '–' %></div><div class="l"><%= t('admin.customers.total_spent') %></div></div>
+      <div class="stat"><div class="v"><%= _pat.avgOrder != null ? _mxn(_pat.avgOrder) : '–' %></div><div class="l"><%= t('admin.customers.avg_order') %></div></div>
+      <div class="stat"><div class="v"><%= _pat.ordersPerMonth != null ? _pat.ordersPerMonth : '–' %></div><div class="l"><%= t('admin.customers.per_month') %></div></div>
+    </div>
+    <% if (_pat.topCategories) { %><p class="small"><b><%= t('admin.customers.top_categories') %>:</b> <%= Array.isArray(_pat.topCategories) ? _pat.topCategories.join(', ') : _pat.topCategories %></p><% } %>
+  </div>
+</div>
+
+<div class="two-col">
+  <form class="form-card" method="POST" action="/admin/clientes/<%= _c.id %>/nota">
+    <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+    <div class="field"><label for="notes"><%= t('admin.customers.notes') %></label>
+      <textarea id="notes" name="notes"><%= _c.notes || '' %></textarea></div>
+    <button class="btn btn-sm" type="submit"><svg class="ic"><use href="#i-check"/></svg><%= t('admin.customers.save_note') %></button>
+  </form>
+  <form class="form-card" method="POST" action="/admin/clientes/<%= _c.id %>/credito">
+    <input type="hidden" name="_csrf" value="<%= _CSRF %>">
+    <div class="field"><label for="amount"><%= t('admin.customers.add_credit') %></label>
+      <input type="number" step="0.01" id="amount" name="amount" placeholder="0.00" required>
+      <div class="hint"><%= t('admin.customers.credit_amount') %>: <%= _mxn(_c.credit_mxn) %></div></div>
+    <button class="btn btn-sm" type="submit"><svg class="ic"><use href="#i-plus"/></svg><%= t('admin.customers.add_credit') %></button>
+  </form>
+</div>
+
+<h2 class="section-title"><svg class="ic"><use href="#i-bag"/></svg><%= t('admin.orders.title') %></h2>
+<div class="table-scroll"><table class="tbl">
+<thead><tr><th>#</th><th><%= t('order.date') %></th><th><%= t('order.channel') %></th><th><%= t('order.status') %></th><th><%= t('admin.orders.total') %></th><th></th></tr></thead>
+<tbody>
+<% if (_orders.length) { _orders.forEach(function(o){ %>
+<tr><td><b>#<%= o.id %></b></td>
+<td><%= o.created_at ? new Date(o.created_at).toLocaleDateString(_L === 'en' ? 'en-US' : 'es-MX') : '' %></td>
+<td><span class="badge badge-status"><%= t('channel.' + (o.channel || 'web')) %></span></td>
+<td><span class="badge badge-status"><%= t('status.' + (o.status || 'pending')) %></span></td>
+<td><b><%= _mxn(o.subtotal_mxn) %></b></td>
+<td><a class="btn btn-sm btn-outline" href="/admin/pedidos/<%= o.id %>"><%= t('admin.customers.view') %></a></td></tr>
+<% }); } else { %><tr><td colspan="6" class="center muted">♥ —</td></tr><% } %>
+</tbody></table></div>
+
+</div>
+</div>
+<%- include('../partials/footer') %>
