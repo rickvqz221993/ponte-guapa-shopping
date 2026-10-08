@@ -1,0 +1,6 @@
+node_modules/
+data/*.db*
+data/email-fallback.log
+src/public/uploads/*
+!src/public/uploads/.gitkeep
+.env
